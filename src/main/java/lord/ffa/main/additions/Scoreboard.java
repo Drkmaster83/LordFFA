@@ -1,33 +1,28 @@
 package lord.ffa.main.additions;
 
-import com.google.common.base.Splitter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import lord.ffa.main.FFA;
+
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
-import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 
+import com.google.common.base.Splitter;
+
+import lord.ffa.main.FFA;
+
 public class Scoreboard {
-	public String title = "";
-	public org.bukkit.scoreboard.Scoreboard scoreboard;
-	public HashMap<String, Integer> Scores;
-	public ArrayList<BukkitRunnable> refreshes = new ArrayList();
-	public Player p;
+	private String title = "";
+	private org.bukkit.scoreboard.Scoreboard scoreboard;
+	private HashMap<String, Integer> Scores;
+	private Player p;
 
-	public Scoreboard() {
+	public Scoreboard(Player p) {
 		this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-		this.Scores = new HashMap();
-	}
-
-	public void setPlayer(Player p) {
+		this.Scores = new HashMap<>();
 		this.p = p;
 	}
 
@@ -35,7 +30,7 @@ public class Scoreboard {
 		this.title = FFA.getString(title);
 	}
 
-	public void addScore(String score, Integer i) {
+	public void addScore(String score, int i) {
 		this.Scores.put(FFA.getString(fixScore(score)), i);
 	}
 
@@ -49,8 +44,9 @@ public class Scoreboard {
 		return text;
 	}
 
-	public void ScoreBuilder() {
-		Objective o = this.scoreboard.registerNewObjective("test", "dummy");
+	@SuppressWarnings("deprecation")
+	public void build() {
+		Objective o = this.scoreboard.registerNewObjective("test", "dummy"); //what
 		o.setDisplaySlot(DisplaySlot.SIDEBAR);
 		o.setDisplayName(this.title);
 
@@ -60,28 +56,24 @@ public class Scoreboard {
 
 			if (score.length() > 16) {
 				Iterator<String> iterator = Splitter.fixedLength(16).split(score).iterator();
-				team.setPrefix((String) iterator.next());
-				player = Bukkit.getOfflinePlayer((String) iterator.next());
+				team.setPrefix(iterator.next());
+				player = Bukkit.getOfflinePlayer(iterator.next());
 
 				team.addPlayer(player);
 
 				if (score.length() > 32) {
-					team.setSuffix((String) iterator.next());
+					team.setSuffix(iterator.next());
 				}
 			}
-
-			o.getScore(player).setScore(((Integer) this.Scores.get(score)).intValue());
+			o.getScore(player).setScore(this.Scores.get(score).intValue());
 		}
 	}
 
-	public void sendScoreboad() {
+	public void sendScoreboard() {
 		this.p.setScoreboard(this.scoreboard);
 	}
 
 	public void clearScoreboard() {
-		for (BukkitRunnable run : this.refreshes) {
-			run.cancel();
-		}
 		this.p.setScoreboard(null);
 	}
 }

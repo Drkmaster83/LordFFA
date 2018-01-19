@@ -1,46 +1,54 @@
 Prefix: '&6FFA &7|'
-MySQL.Host: 'localhost'
-MySQL.Port: 3306
-MySQL.Database: 'LordFFA'
-MySQL.Username: 'root'
-MySQL.Password: '******'
-Kit.item: '1:0'
-Kit.name: '&eKits'
-Kit.slot: 4
+MySQL:
+  Host: 'localhost'
+  Port: 3306
+  Database: 'LordFFA'
+  Username: 'root'
+  Password: '******'
+Kit:
+  item: '1:0'
+  name: '&eKits'
+  slot: 4
 Fix-Cooldown: 3
 Kill-Points: 5
-Messages.JoinMessage.Enable: true
-Messages.QuitMessage.Enable: true
-Messages.JoinMessage.Message: '%prefix% &e%player% &3has joined ffa server.'
-Messages.QuitMessage.Message: '%prefix% &e%player% &3has left ffa server.' 
-Messages.no-command-permission: "%prefix% &cYou don't have permission to do this command."
-Messages.save-successfully:
-- '%prefix% &eYour inventory has been saved.'
-- '%prefix% &eTo delete your save inventory &a/unsave.'
-Messages.save-outspawn: "%prefix% &cYou can't save your inventory here."
-Messages.save-notsaved: "%prefix% &cYou don't have saved inventory."
-Messages.save-unsaved: '%prefix% &eYour saved inventory has been removed.'
-Messages.no-kitpermission: "%prefix% &cYou don't have permission to use this kit."
-Messages.stats:
-- '%prefix% &3Username: &e%name%'
-- '%prefix% &3Kills: &e%kills%'
-- '%prefix% &3Deaths: &e%deaths%'
-- '%prefix% &3Points: &e%points%'
-- '%prefix% &3Ranking: &e#%ranking%'
-- '%prefix% &3KD: &e%kd%'
-Messages.top.header: '%prefix% &8&m-------------&r &6Top &8&m-------------'
-Messages.top.format: '%prefix% &e#%ranking% &a%name% &3with &c%kills%.'
-Messages.top.footer: '%prefix% &8&m-------------&r &6Top &8&m-------------'
-Messages.fix.successfully: '%prefix% &eThere you go!'
-Messages.fix.spam: "%prefix% &cYou can't spam this command"
-Messages.death: '%prefix% &3You have been killed by &e%killer% &3with &e%hearts%.'
-Messages.killer: '%prefix% &3You have killed &e%death% &3with &e%hearts%.'
-Messages.points-killer: '%prefix% &a+%points% points'
-Messages.points-death: '%prefix% &c-%points% points'
-Messages.killstreak: '%prefix% &e%player% &3is on killstreak.'
-Death.items:
-- '262,0,1'
-- '322,0,1'
+Messages:
+  JoinMessage:
+    Enable: true
+    Message: '%prefix% &e%player% &3has joined ffa server.'
+  QuitMessage:
+    Enable: true
+    Message: '%prefix% &e%player% &3has left ffa server.' 
+  no-command-permission: "%prefix% &cYou don't have permission to do this command."
+  save-successfully:
+  - '%prefix% &eYour inventory has been saved.'
+  - '%prefix% &eTo delete your saved inventory &a/unsave.'
+  save-outspawn: "%prefix% &cYou can't save your inventory here."
+  save-notsaved: "%prefix% &cYou don't have saved inventory."
+  save-unsaved: '%prefix% &eYour saved inventory has been removed.'
+  no-kitpermission: "%prefix% &cYou don't have permission to use this kit."
+  stats:
+  - '%prefix% &3Username: &e%name%'
+  - '%prefix% &3Kills: &e%kills%'
+  - '%prefix% &3Deaths: &e%deaths%'
+  - '%prefix% &3Points: &e%points%'
+  - '%prefix% &3Ranking: &e#%ranking%'
+  - '%prefix% &3KD: &e%kd%'
+  top:
+    header: '%prefix% &8&m-------------&r &6Top &8&m-------------'
+    format: '%prefix% &e#%ranking% &a%name% &3with &c%kills%.'
+    footer: '%prefix% &8&m-------------&r &6Top &8&m-------------'
+  fix:
+    successfully: '%prefix% &eThere you go!'
+    spam: "%prefix% &cYou can't spam this command"
+  death: '%prefix% &3You have been killed by &e%killer% &3with &e%hearts%.'
+  killer: '%prefix% &3You have killed &e%death% &3with &e%hearts%.'
+  points-killer: '%prefix% &a+%points% points'
+  points-death: '%prefix% &c-%points% points'
+  killstreak: '%prefix% &e%player% &3is on killstreak.'
+Death:
+  items:
+  - '262,0,1'
+  - '322,0,1'
 Scoreboard:
 - '&6FFA'
 - '&r'

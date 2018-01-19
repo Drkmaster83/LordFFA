@@ -5,27 +5,24 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
-import lord.ffa.main.FFA;
+
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
+
+import lord.ffa.main.FFA;
 
 public class Stats {
 	public static boolean playerExists(String uuid) {
-		if (FFA.getMySQL().isOpened()) {
-			try {
-				ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA WHERE UUID= '" + uuid + "'");
-				if (rs.next()) {
-					return rs.getString("UUID") != null;
-				}
-				return false;
-			} catch (SQLException e) {
-				e.printStackTrace();
+		if (!FFA.getMySQL().isOpened()) return FileSystem.get("Users." + uuid) != null;
+		try {
+			ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA WHERE UUID= '" + uuid + "'");
+			if (rs.next()) {
+				return rs.getString("UUID") != null;
 			}
+			return false;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
 		}
-		return FileSystem.get("Users." + uuid) != null;
-
-		return Boolean.valueOf(false).booleanValue();
 	}
 
 	public static void createPlayer(String uuid) {
@@ -35,9 +32,10 @@ public class Stats {
 						+ "', '0', '0', '100', '" + Bukkit.getPlayer(UUID.fromString(uuid)).getName() + "');");
 			} else {
 				FileSystem.set("Users." + uuid + ".Name", Bukkit.getPlayer(UUID.fromString(uuid)).getName());
-				FileSystem.set("Users." + uuid + ".Kills", Integer.valueOf(0));
-				FileSystem.set("Users." + uuid + ".Deaths", Integer.valueOf(0));
-				FileSystem.set("Users." + uuid + ".Points", Integer.valueOf(100));
+				FileSystem.set("Users." + uuid + ".Kills", 0);
+				FileSystem.set("Users." + uuid + ".Deaths", 0);
+				FileSystem.set("Users." + uuid + ".Points", 100);
+				FileSystem.save();
 			}
 		} else {
 			setName(uuid, Bukkit.getPlayer(UUID.fromString(uuid)).getName());
@@ -47,17 +45,14 @@ public class Stats {
 	public static String getName(String uuid) {
 		String i = "";
 		if (playerExists(uuid)) {
-			if (FFA.getMySQL().isOpened()) {
-				try {
-					ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA WHERE UUID= '" + uuid + "'");
-					if ((rs.next()) && (rs.getString("NAME") == null)) {
-					}
-					i = rs.getString("NAME");
-
-				} catch (SQLException localSQLException) {
+			if (!FFA.getMySQL().isOpened())	return FileSystem.getString("Users." + uuid + ".Name");
+			try {
+				ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA WHERE UUID= '" + uuid + "'");
+				if ((rs.next()) && (rs.getString("NAME") == null)) {
 				}
-			} else {
-				return FileSystem.getString("Users." + uuid + ".Name");
+				i = rs.getString("NAME");
+
+			} catch (SQLException e) {
 			}
 
 		} else {
@@ -72,7 +67,7 @@ public class Stats {
 			if (FFA.getMySQL().isOpened()) {
 				FFA.mysql.update("UPDATE LORDFFA SET NAME= '" + name + "' WHERE UUID= '" + uuid + "';");
 			} else {
-				FileSystem.set("Users." + uuid + ".Name", name);
+				FileSystem.setAndSave("Users." + uuid + ".Name", name);
 			}
 		} else {
 			createPlayer(uuid);
@@ -81,29 +76,29 @@ public class Stats {
 	}
 
 	public static ArrayList<String> getTopPlayers() {
-		ArrayList<String> top = new ArrayList();
+		ArrayList<String> top = new ArrayList<>();
 		if (FFA.getMySQL().isOpened()) {
 			ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA ORDER BY KILLS desc LIMIT 10");
 			try {
 				while (rs.next()) {
 					top.add(rs.getString("UUID"));
 				}
-			} catch (SQLException localSQLException) {
+			} catch (SQLException e) {
 			}
 		} else {
-			HashMap<String, Integer> tops = new HashMap();
+			HashMap<String, Integer> tops = new HashMap<>();
 
 			for (String str : FileSystem.getSection("Users").getKeys(false)) {
 				tops.put(str, getKills(str));
 			}
 
 			String nextTop = "";
-			Integer nextTopKills = Integer.valueOf(-1);
+			int nextTopKills = -1;
 			for (int i = 1; i < 11; i++) {
 				for (String str : tops.keySet()) {
-					if (((Integer) tops.get(str)).intValue() > nextTopKills.intValue()) {
+					if (tops.get(str) > nextTopKills) {
 						nextTop = str;
-						nextTopKills = (Integer) tops.get(str);
+						nextTopKills = tops.get(str);
 					}
 				}
 				if (!nextTop.equals("")) {
@@ -111,7 +106,7 @@ public class Stats {
 				}
 				tops.remove(nextTop);
 				nextTop = "";
-				nextTopKills = Integer.valueOf(-1);
+				nextTopKills = -1;
 			}
 		}
 		return top;
@@ -131,11 +126,11 @@ public class Stats {
 						}
 						Ranking++;
 					}
-				} catch (SQLException localSQLException) {
+				} catch (SQLException e) {
 				}
 			}
 
-			HashMap<String, Integer> top = new HashMap();
+			HashMap<String, Integer> top = new HashMap<>();
 
 			for (String str : FileSystem.getSection("Users").getKeys(false)) {
 				top.put(str, getKills(str));
@@ -144,10 +139,10 @@ public class Stats {
 			int playerRank = 0;
 			if (top.containsKey(uuid)) {
 				playerRank++;
-				int playerKills = ((Integer) top.get(uuid)).intValue();
+				int playerKills = top.get(uuid);
 				for (String playerName : top.keySet()) {
 					if ((!playerName.equalsIgnoreCase(uuid))
-							&& (((Integer) top.get(playerName)).intValue() > playerKills)) {
+							&& (top.get(playerName) > playerKills)) {
 						playerRank++;
 					}
 				}
@@ -156,25 +151,19 @@ public class Stats {
 		}
 
 		createPlayer(uuid);
-		return getRanking(uuid);
-
 		return Ranking;
 	}
 
-	public static Integer getKills(String uuid) {
-		Integer i = Integer.valueOf(0);
+	public static int getKills(String uuid) {
+		int i = 0;
 		if (playerExists(uuid)) {
-			if (FFA.getMySQL().isOpened()) {
-				try {
-					ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA WHERE UUID= '" + uuid + "'");
-					if ((rs.next()) && (Integer.valueOf(rs.getInt("KILLS")) == null)) {
-					}
-					i = Integer.valueOf(rs.getInt("KILLS"));
+			if (!FFA.getMySQL().isOpened()) return FileSystem.getInt("Users." + uuid + ".Kills");
+			try {
+				ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA WHERE UUID= '" + uuid + "'");
+				rs.next(); //TODO Possible exception?
+				i = rs.getInt("KILLS");
 
-				} catch (SQLException localSQLException) {
-				}
-			} else {
-				return Integer.valueOf(FileSystem.getInt("Users." + uuid + ".Kills"));
+			} catch (SQLException e) {
 			}
 
 		} else {
@@ -184,20 +173,16 @@ public class Stats {
 		return i;
 	}
 
-	public static Integer getDeaths(String uuid) {
-		Integer i = Integer.valueOf(0);
+	public static int getDeaths(String uuid) {
+		int i = 0;
 		if (playerExists(uuid)) {
-			if (FFA.getMySQL().isOpened()) {
-				try {
-					ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA WHERE UUID= '" + uuid + "'");
-					if ((rs.next()) && (Integer.valueOf(rs.getInt("DEATHS")) == null)) {
-					}
-					i = Integer.valueOf(rs.getInt("DEATHS"));
+			if (!FFA.getMySQL().isOpened()) return FileSystem.getInt("Users." + uuid + ".Deaths");
+			try {
+				ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA WHERE UUID= '" + uuid + "'");
+				rs.next();
+				rs.getInt("DEATHS");
 
-				} catch (SQLException localSQLException) {
-				}
-			} else {
-				return Integer.valueOf(FileSystem.getInt("Users." + uuid + ".Deaths"));
+			} catch (SQLException e) {
 			}
 
 		} else {
@@ -207,22 +192,17 @@ public class Stats {
 		return i;
 	}
 
-	public static Integer getPoints(String uuid) {
-		Integer i = Integer.valueOf(0);
+	public static int getPoints(String uuid) {
+		int i = 0;
 		if (playerExists(uuid)) {
-			if (FFA.getMySQL().isOpened()) {
-				try {
-					ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA WHERE UUID= '" + uuid + "'");
-					if ((rs.next()) && (Integer.valueOf(rs.getInt("POINTS")) == null)) {
-					}
-					i = Integer.valueOf(rs.getInt("POINTS"));
+			if (!FFA.getMySQL().isOpened()) return FileSystem.getInt("Users." + uuid + ".Points");
+			try {
+				ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA WHERE UUID= '" + uuid + "'");
+				rs.next();
+				i = rs.getInt("POINTS");
 
-				} catch (SQLException localSQLException) {
-				}
-			} else {
-				return Integer.valueOf(FileSystem.getInt("Users." + uuid + ".Points"));
+			} catch (SQLException e) {
 			}
-
 		} else {
 			createPlayer(uuid);
 			return getPoints(uuid);
@@ -230,12 +210,12 @@ public class Stats {
 		return i;
 	}
 
-	public static void setKills(String uuid, Integer kills) {
+	public static void setKills(String uuid, int kills) {
 		if (playerExists(uuid)) {
 			if (FFA.getMySQL().isOpened()) {
 				FFA.getMySQL().update("UPDATE LORDFFA SET KILLS= '" + kills + "' WHERE UUID= '" + uuid + "';");
 			} else {
-				FileSystem.set("Users." + uuid + ".Kills", kills);
+				FileSystem.setAndSave("Users." + uuid + ".Kills", kills);
 			}
 		} else {
 			createPlayer(uuid);
@@ -243,12 +223,12 @@ public class Stats {
 		}
 	}
 
-	public static void setDeaths(String uuid, Integer deaths) {
+	public static void setDeaths(String uuid, int deaths) {
 		if (playerExists(uuid)) {
 			if (FFA.getMySQL().isOpened()) {
 				FFA.getMySQL().update("UPDATE LORDFFA SET DEATHS= '" + deaths + "' WHERE UUID= '" + uuid + "';");
 			} else {
-				FileSystem.set("Users." + uuid + ".Deaths", deaths);
+				FileSystem.setAndSave("Users." + uuid + ".Deaths", deaths);
 			}
 
 		} else {
@@ -257,12 +237,12 @@ public class Stats {
 		}
 	}
 
-	public static void setPoints(String uuid, Integer points) {
+	public static void setPoints(String uuid, int points) {
 		if (playerExists(uuid)) {
 			if (FFA.getMySQL().isOpened()) {
 				FFA.getMySQL().update("UPDATE LORDFFA SET POINTS= '" + points + "' WHERE UUID= '" + uuid + "';");
 			} else {
-				FileSystem.set("Users." + uuid + ".Points", points);
+				FileSystem.setAndSave("Users." + uuid + ".Points", points);
 			}
 
 		} else {
@@ -271,27 +251,27 @@ public class Stats {
 		}
 	}
 
-	public static void addKills(String uuid, Integer kills) {
+	public static void addKills(String uuid, int kills) {
 		if (playerExists(uuid)) {
-			setKills(uuid, Integer.valueOf(getKills(uuid).intValue() + kills.intValue()));
+			setKills(uuid, getKills(uuid) + kills);
 		} else {
 			createPlayer(uuid);
 			addKills(uuid, kills);
 		}
 	}
 
-	public static void addDeaths(String uuid, Integer deaths) {
+	public static void addDeaths(String uuid, int deaths) {
 		if (playerExists(uuid)) {
-			setDeaths(uuid, Integer.valueOf(getDeaths(uuid).intValue() + deaths.intValue()));
+			setDeaths(uuid, getDeaths(uuid) + deaths);
 		} else {
 			createPlayer(uuid);
 			addDeaths(uuid, deaths);
 		}
 	}
 
-	public static void addPoints(String uuid, Integer points) {
+	public static void addPoints(String uuid, int points) {
 		if (playerExists(uuid)) {
-			setPoints(uuid, Integer.valueOf(getPoints(uuid).intValue() + points.intValue()));
+			setPoints(uuid, getPoints(uuid) + points);
 		} else {
 			createPlayer(uuid);
 			addPoints(uuid, points);

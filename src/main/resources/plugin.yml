@@ -1,11 +1,23 @@
 name: LordFFA
 main: lord.ffa.main.FFA
-version: 1.2
+version: 1.25
+descripton: Some sort of FFA plugin.
+authors: [LordFFA, Drkmaster83]
 commands:
- ffa:
- fix:
- save:
- unsave:
- stats:
- records:
- top:
+  FreeForAll:
+    description: Base command for FFA.
+    aliases: [ffa]
+  Fix:
+    description: Probably repair your items.
+  Top:
+    description: Top rankings of the server.
+    aliases: [toprank, toprankings]
+  Save:
+    description: Save your inventory.
+    aliases: [store]
+  Unsave:
+    description: Delete your saved inventory.
+    aliases: [delete]
+  Stats:
+    description: View statistics.
+    aliases: [records]

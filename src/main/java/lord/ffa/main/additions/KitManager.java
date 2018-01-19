@@ -3,8 +3,7 @@ package lord.ffa.main.additions;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Set;
-import lord.ffa.main.FFA;
+
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -13,10 +12,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import lord.ffa.main.FFA;
+
 public class KitManager {
-	public static File path = new File("plugins/LordFFA");
-	public static File file = new File("plugins/LordFFA", "Kits.yml");
-	public static FileConfiguration configuration = YamlConfiguration.loadConfiguration(file);
+	private static File path = new File("plugins/LordFFA");
+	private static File file = new File("plugins/LordFFA", "Kits.yml");
+	private static FileConfiguration configuration = YamlConfiguration.loadConfiguration(file); //TODO possible NPE
 
 	public static void setupKitFile() {
 		path.mkdirs();
@@ -51,20 +52,13 @@ public class KitManager {
 	}
 
 	public static void addKit(String name, PlayerInventory inv, String permission) {
-		int i = 1;
-		if ((get("Kits") != null) && (getSection("Kits").getKeys(false).size() > 1)) {
-			for (String str : getSection("Kits").getKeys(false)) {
-				i++;
-			}
-		}
-
 		set("Kits." + name + ".item.type", "1:0");
-		set("Kits." + name + ".item.slot", Integer.valueOf(i));
+		set("Kits." + name + ".item.slot", getSection("Kits").getKeys(false).size());
 		set("Kits." + name + ".item.displayname", "&9Test");
 		set("Kits." + name + ".Message", "%prefix% &aYou have recevied &9Test &akit.");
 		set("Kits." + name + ".Permission", permission);
-		set("Kits." + name + ".Armor", InventoryUtils.ItemstoString(inv.getArmorContents()));
-		set("Kits." + name + ".Inventory", InventoryUtils.ItemstoString(inv.getContents()));
+		set("Kits." + name + ".Armor", InventoryUtils.itemsToString(inv.getArmorContents()));
+		set("Kits." + name + ".Inventory", InventoryUtils.itemsToString(inv.getContents()));
 	}
 
 	public static String getKitMessage(String kit) {
@@ -74,25 +68,26 @@ public class KitManager {
 		return FFA.getString(getString("Kits." + kit + ".Message"));
 	}
 
+	@SuppressWarnings("deprecation")
 	public static ItemStack getKitItem(String kit) {
 		if (!KitExists(kit)) {
 			return null;
 		}
 		String[] str = getString("Kits." + kit + ".item.type").split(":");
-		ItemStack G = new ItemStack(Material.getMaterial(Integer.valueOf(str[0]).intValue()), 1,
+		ItemStack g = new ItemStack(Material.getMaterial(Integer.valueOf(str[0]).intValue()), 1,
 				Byte.valueOf(str[1]).byteValue());
-		ItemMeta Gm = G.getItemMeta();
-		Gm.setDisplayName(FFA.getString(getString("Kits." + kit + ".item.displayname")));
-		G.setItemMeta(Gm);
-		return G;
+		ItemMeta gMeta = g.getItemMeta();
+		gMeta.setDisplayName(FFA.getString(getString("Kits." + kit + ".item.displayname")));
+		g.setItemMeta(gMeta);
+		return g;
 	}
 
-	public static Integer getKitSlot(String kit) {
+	public static int getKitSlot(String kit) {
 		if (!KitExists(kit)) {
-			return null;
+			return -1;
 		}
 
-		return Integer.valueOf(getInt("Kits." + kit + ".item.slot") - 1);
+		return getInt("Kits." + kit + ".item.slot") - 1;
 	}
 
 	public static String getKitPermission(String kit) {
@@ -106,7 +101,7 @@ public class KitManager {
 		if (!KitExists(kit)) {
 			return null;
 		}
-		return InventoryUtils.ItemsFromString(getString("Kits." + kit + "." + type));
+		return InventoryUtils.itemsFromString(getString("Kits." + kit + "." + type));
 	}
 
 	public static boolean KitExists(String kit) {

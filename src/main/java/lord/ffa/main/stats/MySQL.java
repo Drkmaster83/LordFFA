@@ -1,30 +1,33 @@
 package lord.ffa.main.stats;
 
-import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import lord.ffa.main.FFA;
+
 import org.bukkit.configuration.file.FileConfiguration;
 
+import lord.ffa.main.FFA;
+
 public class MySQL {
-	public Connection conn = null;
+	private Connection conn = null;
 
 	public void connect() {
 		try {
+			FFA inst = FFA.getInstance();
+			FileConfiguration conf = inst.getConfig();
 			this.conn = DriverManager.getConnection(
-					"jdbc:mysql://" + FFA.getInstance().getConfig().getString("MySQL.Host") + ":"
-							+ FFA.getInstance().getConfig().getInt("MySQL.Port") + "/"
-							+ FFA.getInstance().getConfig().getString("MySQL.Database") + "?autoReconnect=true",
-					FFA.getInstance().getConfig().getString("MySQL.Username"),
-					FFA.getInstance().getConfig().getString("MySQL.Password"));
+					"jdbc:mysql://" + conf.getString("MySQL.Host") + ":"
+							+ conf.getInt("MySQL.Port") + "/"
+							+ conf.getString("MySQL.Database") + "?autoReconnect=true",
+					conf.getString("MySQL.Username"),
+					conf.getString("MySQL.Password"));
 
-			System.out.println("[LordFFA] MySQL Connection Connected to Driver Successfully");
+			inst.getLogger().info("[LordFFA] MySQL Connection Connected to Driver Successfully");
 		} catch (SQLException e) {
 			this.conn = null;
-			System.out.println("[LordFFA] Disconnected from Driver reason :" + e.getMessage());
+			FFA.getInstance().getLogger().warning("[LordFFA] (Unable to connect MySQL) Disconnected from Driver reason :" + e.getMessage());
 		}
 	}
 
@@ -36,10 +39,10 @@ public class MySQL {
 		try {
 			if (this.conn != null) {
 				this.conn.close();
-				System.out.println("[LordFFA] MySQL Connection Closed from Driver Successfully.");
+				FFA.getInstance().getLogger().info("[LordFFA] MySQL Connection Closed from Driver Successfully.");
 			}
 		} catch (SQLException e) {
-			System.out.println("[LordFFA] Erorr while we disconnect to MySQL " + e.getMessage());
+			FFA.getInstance().getLogger().severe("[LordFFA] Error while we disconnect to MySQL " + e.getMessage());
 		}
 	}
 
