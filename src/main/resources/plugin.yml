@@ -1,0 +1,11 @@
+name: LordFFA
+main: lord.ffa.main.FFA
+version: 1.2
+commands:
+ ffa:
+ fix:
+ save:
+ unsave:
+ stats:
+ records:
+ top:
