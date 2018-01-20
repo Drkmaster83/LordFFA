@@ -1,4 +1,4 @@
-package lord.ffa.main.stats;
+package lord.ffa.stats;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -8,7 +8,7 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 
-import lord.ffa.main.FFA;
+import lord.ffa.plugin.FFA;
 
 public class Stats {
 	public static boolean playerExists(String uuid) {

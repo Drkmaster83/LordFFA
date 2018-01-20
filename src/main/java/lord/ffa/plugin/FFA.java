@@ -1,4 +1,4 @@
-package lord.ffa.main;
+package lord.ffa.plugin;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,10 +12,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import lord.ffa.main.additions.Scoreboard;
-import lord.ffa.main.stats.FileSystem;
-import lord.ffa.main.stats.MySQL;
-import lord.ffa.main.stats.Stats;
+import lord.ffa.additions.KitManager;
+import lord.ffa.additions.Scoreboard;
+import lord.ffa.stats.FileSystem;
+import lord.ffa.stats.MySQL;
+import lord.ffa.stats.Stats;
 
 public class FFA extends JavaPlugin
 {
@@ -41,7 +42,7 @@ public class FFA extends JavaPlugin
 		saveConfig();
 		prefix = getInstance().getConfig().getString("Prefix");
 		FileSystem.setupStatsFile();
-		lord.ffa.main.additions.KitManager.setupKitFile();
+		KitManager.setupKitFile();
 		getCommand("FreeForAll").setExecutor(new Commands());
 		getCommand("Fix").setExecutor(new Commands());
 		getCommand("Top").setExecutor(new Commands());
@@ -86,8 +87,12 @@ public class FFA extends JavaPlugin
 	}
 
 	public static boolean insideSpawn(Location loc) {
+		return insideSpawn(loc, false);
+	}
+	
+	public static boolean insideSpawn(Location loc, boolean moveEvent) {
 		FileConfiguration config = getInstance().getConfig();
-		if(config.get("Region.1") == null || config.get("Region.2") == null) return false;
+		if(config.get("Region.1") == null || config.get("Region.2") == null) return moveEvent;
 		if (loc.getWorld().getName().equals(config.getString("Region.1.world"))	&& loc.getWorld().getName().equals(config.getString("Region.2.world"))) {
 			double x1 = config.getDouble("Region.1.x"),
 			x2 = config.getDouble("Region.2.x");
@@ -98,9 +103,9 @@ public class FFA extends JavaPlugin
 			double z1 = config.getDouble("Region.1.z"),
 			z2 = config.getDouble("Region.2.z");
 
-			if (loc.getX() <= Math.max(x1, x2) && loc.getX() >= Math.min(x2, x1) &&
-					loc.getY() <= Math.max(y1, y2) && loc.getBlockY() >= Math.min(y1, y2) &&
-					loc.getBlockZ() <= Math.max(z1, z2) && loc.getZ() >= Math.max(z1, z2)) {
+			if (loc.getX() < Math.max(x1, x2) && loc.getX() > Math.min(x1, x2) &&
+					loc.getY() < Math.max(y1, y2) && loc.getBlockY() > Math.min(y1, y2) &&
+					loc.getBlockZ() < Math.max(z1, z2) && loc.getZ() > Math.min(z1, z2)) {
 				return true;
 			}
 		}
@@ -110,8 +115,8 @@ public class FFA extends JavaPlugin
 
 	@SuppressWarnings("deprecation")
 	public static ItemStack getKitItem() {
-		int i = Integer.valueOf(getInstance().getConfig().getString("Kit.item").split(":")[1]).intValue();
-		ItemStack item = new ItemStack(Material.getMaterial(Integer.valueOf(getInstance().getConfig().getString("Kit.item").split(":")[0]).intValue()), 1, (byte)i);
+		int i = Integer.valueOf(getInstance().getConfig().getString("Kit.item").split(":")[1]);
+		ItemStack item = new ItemStack(Material.getMaterial(Integer.valueOf(getInstance().getConfig().getString("Kit.item").split(":")[0])), 1, (byte)i);
 		ItemMeta itemmeta = item.getItemMeta();
 		itemmeta.setDisplayName(getString(getInstance().getConfig().getString("Kit.name")));
 		item.setItemMeta(itemmeta);

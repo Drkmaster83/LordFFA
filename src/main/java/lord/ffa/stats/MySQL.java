@@ -1,4 +1,4 @@
-package lord.ffa.main.stats;
+package lord.ffa.stats;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -8,7 +8,7 @@ import java.sql.Statement;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
-import lord.ffa.main.FFA;
+import lord.ffa.plugin.FFA;
 
 public class MySQL {
 	private Connection conn = null;

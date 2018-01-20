@@ -1,4 +1,4 @@
-package lord.ffa.main.additions;
+package lord.ffa.additions;
 
 import java.util.HashMap;
 
@@ -24,7 +24,7 @@ public class InventoryUtils {
 			}
 			String data = item.getTypeId() + ":" + item.getData().getData() + ":" + item.getAmount() + ":" + item.getDurability() + ":" + i;
 			String displayName = !item.hasItemMeta() || !item.getItemMeta().hasDisplayName()
-					? "" : item.getItemMeta().getDisplayName().replace("§", "&");
+					? "" : item.getItemMeta().getDisplayName().replace("\u00A7", "&");
 
 			String enchantment = "";
 			for (Enchantment enchant : item.getEnchantments().keySet()) {
@@ -62,7 +62,7 @@ public class InventoryUtils {
 			int slot = Integer.valueOf(data[4]).intValue();
 			String displayName = "";
 			if (string.length > 1) {
-				displayName = string[1].replace("&", "§");
+				displayName = string[1].replace("&", "ï¿½");
 			}
 
 			ItemStack toItem = new ItemStack(Material.getMaterial(id), amount, durability, Byte.valueOf(itemData));

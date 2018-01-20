@@ -1,4 +1,4 @@
-package lord.ffa.main.stats;
+package lord.ffa.stats;
 
 import java.io.File;
 import java.io.IOException;

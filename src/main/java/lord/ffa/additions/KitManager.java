@@ -1,4 +1,4 @@
-package lord.ffa.main.additions;
+package lord.ffa.additions;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import lord.ffa.main.FFA;
+import lord.ffa.plugin.FFA;
 
 public class KitManager {
 	private static File path = new File("plugins/LordFFA");
@@ -62,15 +62,15 @@ public class KitManager {
 	}
 
 	public static String getKitMessage(String kit) {
-		if (!KitExists(kit)) {
+		if (!kitExists(kit)) {
 			return null;
 		}
 		return FFA.getString(getString("Kits." + kit + ".Message"));
 	}
 
 	@SuppressWarnings("deprecation")
-	public static ItemStack getKitItem(String kit) {
-		if (!KitExists(kit)) {
+	public static ItemStack getKitInvItem(String kit) {
+		if (!kitExists(kit)) {
 			return null;
 		}
 		String[] str = getString("Kits." + kit + ".item.type").split(":");
@@ -83,7 +83,7 @@ public class KitManager {
 	}
 
 	public static int getKitSlot(String kit) {
-		if (!KitExists(kit)) {
+		if (!kitExists(kit)) {
 			return -1;
 		}
 
@@ -91,20 +91,20 @@ public class KitManager {
 	}
 
 	public static String getKitPermission(String kit) {
-		if (!KitExists(kit)) {
+		if (!kitExists(kit)) {
 			return null;
 		}
 		return getString("Kits." + kit + ".Permission");
 	}
 
 	public static HashMap<Integer, ItemStack> getKitContents(String kit, String type) {
-		if (!KitExists(kit)) {
+		if (!kitExists(kit)) {
 			return null;
 		}
 		return InventoryUtils.itemsFromString(getString("Kits." + kit + "." + type));
 	}
 
-	public static boolean KitExists(String kit) {
+	public static boolean kitExists(String kit) {
 		return get("Kits." + kit) != null;
 	}
 

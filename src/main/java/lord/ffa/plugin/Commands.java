@@ -1,4 +1,4 @@
-package lord.ffa.main;
+package lord.ffa.plugin;
 
 import java.text.DecimalFormat;
 import java.util.Iterator;
@@ -10,8 +10,9 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import lord.ffa.main.additions.InventoryUtils;
-import lord.ffa.main.stats.Stats;
+import lord.ffa.additions.InventoryUtils;
+import lord.ffa.additions.KitManager;
+import lord.ffa.stats.Stats;
 
 public class Commands implements CommandExecutor {
 	@SuppressWarnings("deprecation")
@@ -33,6 +34,7 @@ public class Commands implements CommandExecutor {
 				p.sendMessage(FFA.getString(""));
 				p.sendMessage(FFA.getString("%prefix% &3/ffa setspawn"));
 				p.sendMessage(FFA.getString("%prefix% &3/ffa setregion <1 - 2>"));
+				p.sendMessage(FFA.getString("%prefix% &3/ffa resetregion"));
 				p.sendMessage(FFA.getString("%prefix% &3/ffa reset <player>"));
 				p.sendMessage(FFA.getString("%prefix% &3/ffa addkit <name> <permission>"));
 				p.sendMessage(FFA.getString("%prefix% &3/ffa build"));
@@ -58,7 +60,7 @@ public class Commands implements CommandExecutor {
 				FFA.getInstance().saveConfig();
 				p.sendMessage(FFA.getString("%prefix% &aYou have set the spawn location successfully."));
 			}
-			if (args[0].equalsIgnoreCase("build")) {
+			else if (args[0].equalsIgnoreCase("build")) {
 				if (args.length != 1) {
 					p.sendMessage(FFA.getString("%prefix% &3/ffa build"));
 					return true;
@@ -71,18 +73,16 @@ public class Commands implements CommandExecutor {
 					FFA.build.add(p);
 				}
 			}
-
-			if (args[0].equalsIgnoreCase("addkit")) {
+			else if (args[0].equalsIgnoreCase("addkit")) {
 				if (args.length != 3) {
 					p.sendMessage(FFA.getString("%prefix% &3/ffa addkit <name> <permission>"));
 					return true;
 				}
-				lord.ffa.main.additions.KitManager.addKit(args[1], p.getInventory(), args[2]);
+				KitManager.addKit(args[1], p.getInventory(), args[2]);
 				p.sendMessage(FFA.getString("%prefix% &aYou have added the '" + args[1] + "' kit."));
 				p.sendMessage(FFA.getString("%prefix% &aPlease setup kit settings from Kits.yml."));
 			}
-
-			if (args[0].equalsIgnoreCase("reset")) {
+			else if (args[0].equalsIgnoreCase("reset")) {
 				if (args.length != 2) {
 					p.sendMessage(FFA.getString("%prefix% &3/ffa reset <player>"));
 
@@ -101,7 +101,7 @@ public class Commands implements CommandExecutor {
 				} else {
 					OfflinePlayer target2 = Bukkit.getOfflinePlayer(args[1]);
 					if (!Stats.playerExists(target2.getUniqueId().toString())) {
-						p.sendMessage(FFA.getString("%prefix% &cThere is not a player with this name in the database."));
+						p.sendMessage(FFA.getString("%prefix% &cThere is not a player with that name in the database."));
 						return true;
 					}
 					Stats.setKills(target2.getUniqueId().toString(), 0);
@@ -110,8 +110,7 @@ public class Commands implements CommandExecutor {
 					p.sendMessage(FFA.getString("%prefix% &aYou have reset &e" + target2.getName() + "'s &astats."));
 				}
 			}
-
-			if (args[0].equalsIgnoreCase("setregion")) {
+			else if (args[0].equalsIgnoreCase("setregion")) {
 				if (args.length != 2) {
 					p.sendMessage(FFA.getString("%prefix% &3/ffa setregion <1 - 2>"));
 
@@ -132,12 +131,13 @@ public class Commands implements CommandExecutor {
 				FFA.getInstance().getConfig().set("Region." + i + ".x", p.getLocation().getX());
 				FFA.getInstance().getConfig().set("Region." + i + ".y", p.getLocation().getY());
 				FFA.getInstance().getConfig().set("Region." + i + ".z", p.getLocation().getZ());
-				FFA.getInstance().getConfig().set("Region." + i + ".yaw",
-						Float.valueOf(p.getLocation().getYaw()));
-				FFA.getInstance().getConfig().set("Region." + i + ".pitch",
-						Float.valueOf(p.getLocation().getPitch()));
 				FFA.getInstance().saveConfig();
 				p.sendMessage(FFA.getString("%prefix% &aYou have set region point #" + i + " successfully."));
+			}
+			else if (args[0].equalsIgnoreCase("regionclear") || args[0].equalsIgnoreCase("clearregion") || args[0].equalsIgnoreCase("resetregion")) {
+				FFA.getInstance().getConfig().set("Region", null);
+				FFA.getInstance().saveConfig();
+				p.sendMessage(FFA.getString("%prefix% &aYou've cleared the regions! Spawn protection and other functions no longer apply."));
 			}
 		}
 		else if (cmd.getName().equalsIgnoreCase("Fix")) {
@@ -214,10 +214,7 @@ public class Commands implements CommandExecutor {
 				int deaths = Stats.getDeaths(p.getUniqueId().toString());
 				int points = Stats.getPoints(p.getUniqueId().toString());
 				int ranking = Stats.getDeaths(p.getUniqueId().toString());
-				String kd = df.format(kills / deaths);
-				if ((kills == 0) && (deaths == 0)) {
-					kd = "0.0";
-				}
+				String kd = deaths == 0 ? (kills != 0 ? "Inf" : "0.0") : df.format(kills / deaths);
 				for (String str : FFA.getInstance().getConfig().getStringList("Messages.stats")) {
 					p.sendMessage(FFA.getString(str.replace("%name%", p.getName()).replace("%kills%", kills + "")
 							.replace("%deaths%", deaths + "").replace("%points%", points + "")
@@ -230,10 +227,7 @@ public class Commands implements CommandExecutor {
 					int deaths = Stats.getDeaths(target.getUniqueId().toString());
 					int points = Stats.getPoints(target.getUniqueId().toString());
 					int ranking = Stats.getDeaths(target.getUniqueId().toString());
-					String kd = df.format(kills / deaths);
-					if ((kills == 0) && (deaths == 0)) {
-						kd = "0.0";
-					}
+					String kd = deaths == 0 ? (kills != 0 ? "Inf" : "0.0") : df.format(kills / deaths);
 					for (String str : FFA.getInstance().getConfig().getStringList("Messages.stats")) {
 						p.sendMessage(
 								FFA.getString(str.replace("%name%", target.getName()).replace("%kills%", kills + "")
@@ -243,16 +237,14 @@ public class Commands implements CommandExecutor {
 				} else {
 					OfflinePlayer target2 = Bukkit.getOfflinePlayer(args[0]);
 					if (!Stats.playerExists(target2.getUniqueId().toString())) {
-						p.sendMessage(FFA.getString("%prefix% &cThere is not a player with this name in the database."));
+						p.sendMessage(FFA.getString("%prefix% &cThere is not a player with that name in the database."));
 						return true;
 					}
 					int kills = Stats.getKills(target2.getUniqueId().toString());
 					int deaths = Stats.getDeaths(target2.getUniqueId().toString());
 					int points = Stats.getPoints(target2.getUniqueId().toString());
 					int ranking = Stats.getDeaths(target2.getUniqueId().toString());
-					String kd = df.format(kills / deaths);
-					if (kills == 0 && deaths == 0) kd = "0.0";
-					else if(deaths == 0) kd = "Inf";
+					String kd = deaths == 0 ? (kills != 0 ? "Inf" : "0.0") : df.format(kills / deaths);
 					for (String str : FFA.getInstance().getConfig().getStringList("Messages.stats")) {
 						p.sendMessage(FFA
 								.getString(str.replace("%name%", target2.getName()).replace("%kills%", kills + "")
