@@ -2,13 +2,16 @@ package lord.ffa.stats;
 
 import java.io.File;
 import java.io.IOException;
+
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import lord.ffa.plugin.FFA;
+
 public class FileSystem {
-	private static File path = new File("plugins/LordFFA");
-	private static File file = new File("plugins/LordFFA", "Stats.yml");
+	private static File path = FFA.getInstance().getDataFolder();
+	private static File file = new File(FFA.getInstance().getDataFolder(), "Stats.yml");
 	private static FileConfiguration configuration = YamlConfiguration.loadConfiguration(file); // TODO possible exception
 	
 	public static void setupStatsFile() {

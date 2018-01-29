@@ -13,7 +13,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import lord.ffa.additions.KitManager;
-import lord.ffa.additions.Scoreboard;
+import lord.ffa.additions.MessageUtils;
+import lord.ffa.additions.PlayerScoreboard;
 import lord.ffa.stats.FileSystem;
 import lord.ffa.stats.MySQL;
 import lord.ffa.stats.Stats;
@@ -21,58 +22,47 @@ import lord.ffa.stats.Stats;
 public class FFA extends JavaPlugin
 {
 	public static FFA instance;
-	public static String prefix;
 	public static MySQL mysql;
-	public static HashMap<Player, String> save = new HashMap<>();
-	public static ArrayList<Player> fixSpam = new ArrayList<>();
-	public static ArrayList<Player> build = new ArrayList<>();
-	public static HashMap<Player, Player> target = new HashMap<>();
+	public HashMap<Player, String> save = new HashMap<>();
+	public ArrayList<Player> fixSpam = new ArrayList<>();
+	public ArrayList<Player> build = new ArrayList<>();
+	public HashMap<Player, Player> target = new HashMap<>();
 
 	@Override
 	public void onEnable()
 	{
 		instance = this;
 		getConfig().options().copyHeader(true);
-		getConfig().options().header("Welcome to LordFFA plugin. Plugin was made by LordOfSupeRz\n"
+		getConfig().options().header("Welcome to FFA plugin. Plugin was made by LordOfSupeRz\n"
 				                   + "This plugin is very simple and easy to use.\n"
 				                   + "Enjoy with customizable config. You can edit messages and plugin settings");
 
 		getConfig().options().copyDefaults(true);
 		saveDefaultConfig();
 		saveConfig();
-		prefix = getInstance().getConfig().getString("Prefix");
 		FileSystem.setupStatsFile();
 		KitManager.setupKitFile();
-		getCommand("FreeForAll").setExecutor(new Commands());
-		getCommand("Fix").setExecutor(new Commands());
-		getCommand("Top").setExecutor(new Commands());
-		getCommand("Save").setExecutor(new Commands());
-		getCommand("Unsave").setExecutor(new Commands());
-		getCommand("Stats").setExecutor(new Commands());
+		Commands cmdExec = new Commands(this);
+		getCommand("FreeForAll").setExecutor(cmdExec);
+		getCommand("Fix").setExecutor(cmdExec);
+		getCommand("Top").setExecutor(cmdExec);
+		getCommand("Save").setExecutor(cmdExec);
+		getCommand("Unsave").setExecutor(cmdExec);
+		getCommand("Stats").setExecutor(cmdExec);
 
-		getServer().getPluginManager().registerEvents(new Events(), this);
+		getServer().getPluginManager().registerEvents(new Events(this), this);
 		mysql = new MySQL();
 		mysql.connect();
 		if (mysql.isOpened()) {
-			mysql.update("CREATE TABLE IF NOT EXISTS LORDFFA(UUID varchar(64), KILLS int, DEATHS int, POINTS int, NAME varchar(64));");
+			mysql.update("CREATE TABLE IF NOT EXISTS FFA(UUID varchar(64), KILLS int, DEATHS int, POINTS int, NAME varchar(64));");
 		}
-	}
-
-	public static FFA getInstance()
-	{
-		return instance;
-	}
-
-	public static String getString(String str)
-	{
-		return org.bukkit.ChatColor.translateAlternateColorCodes('&', str.replace("%prefix%", prefix));
 	}
 
 	public static MySQL getMySQL() {
 		return mysql;
 	}
 
-	public static Location getSpawnLocation() {
+	public Location getSpawnLocation() {
 		if (getInstance().getConfig().get("Spawn") != null) {
 			World w = org.bukkit.Bukkit.getWorld(getInstance().getConfig().getString("Spawn.world"));
 			double x = getInstance().getConfig().getDouble("Spawn.x");
@@ -86,11 +76,11 @@ public class FFA extends JavaPlugin
 		return null;
 	}
 
-	public static boolean insideSpawn(Location loc) {
+	public boolean insideSpawn(Location loc) {
 		return insideSpawn(loc, false);
 	}
 	
-	public static boolean insideSpawn(Location loc, boolean moveEvent) {
+	public boolean insideSpawn(Location loc, boolean moveEvent) {
 		FileConfiguration config = getInstance().getConfig();
 		if(config.get("Region.1") == null || config.get("Region.2") == null) return moveEvent;
 		if (loc.getWorld().getName().equals(config.getString("Region.1.world"))	&& loc.getWorld().getName().equals(config.getString("Region.2.world"))) {
@@ -113,31 +103,30 @@ public class FFA extends JavaPlugin
 		return false;
 	}
 
-	@SuppressWarnings("deprecation")
-	public static ItemStack getKitItem() {
+	public ItemStack getKitItem() {
 		int i = Integer.valueOf(getInstance().getConfig().getString("Kit.item").split(":")[1]);
-		ItemStack item = new ItemStack(Material.getMaterial(Integer.valueOf(getInstance().getConfig().getString("Kit.item").split(":")[0])), 1, (byte)i);
+		ItemStack item = new ItemStack(Material.getMaterial(getInstance().getConfig().getString("Kit.item").split(":")[0]), 1, (short) i);
 		ItemMeta itemmeta = item.getItemMeta();
-		itemmeta.setDisplayName(getString(getInstance().getConfig().getString("Kit.name")));
+		itemmeta.setDisplayName(MessageUtils.cc(getInstance().getConfig().getString("Kit.name")));
 		item.setItemMeta(itemmeta);
 		return item;
 	}
 
-	public static void scoreboardCreate(Player p)
+	public void scoreboardCreate(Player p)
 	{
-		Scoreboard board = new Scoreboard(p);
+		PlayerScoreboard board = new PlayerScoreboard(p);
 		boolean title = true;
 		int i = getInstance().getConfig().getStringList("Scoreboard").size() - 1;
 		for (String str : getInstance().getConfig().getStringList("Scoreboard")) {
 			if (title) {
-				board.setTitle(getString(str));
+				board.setTitle(MessageUtils.getString(str));
 				title = false;
 			} else {
 				str = str.replace("%kills%", Stats.getKills(p.getUniqueId().toString())+"");
 				str = str.replace("%deaths%", Stats.getDeaths(p.getUniqueId().toString())+"");
 				str = str.replace("%points%", Stats.getPoints(p.getUniqueId().toString())+"");
 				str = str.replace("%name%", p.getName());
-				board.addScore(getString(str), i);
+				board.addScore(MessageUtils.getString(str), i);
 				i--;
 			}
 		}
@@ -146,15 +135,19 @@ public class FFA extends JavaPlugin
 		board.sendScoreboard();
 	}
 
-	@SuppressWarnings("deprecation")
-	public static ArrayList<ItemStack> deathItems()
+	public ArrayList<ItemStack> deathItems()
 	{
 		ArrayList<ItemStack> items = new ArrayList<>();
 		for (String str : getInstance().getConfig().getStringList("Death.items")) {
 			String[] string = str.split(",");
-			ItemStack item = new ItemStack(Material.getMaterial(Integer.valueOf(string[0]).intValue()), Integer.valueOf(string[1]).intValue(), Byte.valueOf(string[2]).byteValue());
+			ItemStack item = new ItemStack(Material.getMaterial(string[0]), Integer.valueOf(string[1]), Short.valueOf(string[2]));
 			items.add(item);
 		}
 		return items;
+	}
+	
+	public static FFA getInstance()
+	{
+		return instance;
 	}
 }

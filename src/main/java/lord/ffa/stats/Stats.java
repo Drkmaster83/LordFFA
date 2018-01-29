@@ -14,7 +14,7 @@ public class Stats {
 	public static boolean playerExists(String uuid) {
 		if (!FFA.getMySQL().isOpened()) return FileSystem.get("Users." + uuid) != null;
 		try {
-			ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA WHERE UUID= '" + uuid + "'");
+			ResultSet rs = FFA.getMySQL().query("SELECT * FROM FFA WHERE UUID= '" + uuid + "'");
 			if (rs.next()) {
 				return rs.getString("UUID") != null;
 			}
@@ -28,7 +28,7 @@ public class Stats {
 	public static void createPlayer(String uuid) {
 		if (!playerExists(uuid)) {
 			if (FFA.getMySQL().isOpened()) {
-				FFA.getMySQL().update("INSERT INTO LORDFFA(UUID, KILLS, DEATHS, POINTS, NAME) VALUES ('" + uuid
+				FFA.getMySQL().update("INSERT INTO FFA(UUID, KILLS, DEATHS, POINTS, NAME) VALUES ('" + uuid
 						+ "', '0', '0', '100', '" + Bukkit.getPlayer(UUID.fromString(uuid)).getName() + "');");
 			} else {
 				FileSystem.set("Users." + uuid + ".Name", Bukkit.getPlayer(UUID.fromString(uuid)).getName());
@@ -47,7 +47,7 @@ public class Stats {
 		if (playerExists(uuid)) {
 			if (!FFA.getMySQL().isOpened())	return FileSystem.getString("Users." + uuid + ".Name");
 			try {
-				ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA WHERE UUID= '" + uuid + "'");
+				ResultSet rs = FFA.getMySQL().query("SELECT * FROM FFA WHERE UUID= '" + uuid + "'");
 				if ((rs.next()) && (rs.getString("NAME") == null)) {
 				}
 				i = rs.getString("NAME");
@@ -65,7 +65,7 @@ public class Stats {
 	public static void setName(String uuid, String name) {
 		if (playerExists(uuid)) {
 			if (FFA.getMySQL().isOpened()) {
-				FFA.mysql.update("UPDATE LORDFFA SET NAME= '" + name + "' WHERE UUID= '" + uuid + "';");
+				FFA.mysql.update("UPDATE FFA SET NAME= '" + name + "' WHERE UUID= '" + uuid + "';");
 			} else {
 				FileSystem.setAndSave("Users." + uuid + ".Name", name);
 			}
@@ -78,7 +78,7 @@ public class Stats {
 	public static ArrayList<String> getTopPlayers() {
 		ArrayList<String> top = new ArrayList<>();
 		if (FFA.getMySQL().isOpened()) {
-			ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA ORDER BY KILLS desc LIMIT 10");
+			ResultSet rs = FFA.getMySQL().query("SELECT * FROM FFA ORDER BY KILLS desc LIMIT 10");
 			try {
 				while (rs.next()) {
 					top.add(rs.getString("UUID"));
@@ -117,7 +117,7 @@ public class Stats {
 
 		if (!playerExists(uuid)) {
 			if (FFA.getMySQL().isOpened()) {
-				ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA ORDER BY Wins desc");
+				ResultSet rs = FFA.getMySQL().query("SELECT * FROM FFA ORDER BY Wins desc");
 
 				try {
 					while (rs.next()) {
@@ -159,7 +159,7 @@ public class Stats {
 		if (playerExists(uuid)) {
 			if (!FFA.getMySQL().isOpened()) return FileSystem.getInt("Users." + uuid + ".Kills");
 			try {
-				ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA WHERE UUID= '" + uuid + "'");
+				ResultSet rs = FFA.getMySQL().query("SELECT * FROM FFA WHERE UUID= '" + uuid + "'");
 				rs.next(); //TODO Possible exception?
 				i = rs.getInt("KILLS");
 
@@ -178,7 +178,7 @@ public class Stats {
 		if (playerExists(uuid)) {
 			if (!FFA.getMySQL().isOpened()) return FileSystem.getInt("Users." + uuid + ".Deaths");
 			try {
-				ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA WHERE UUID= '" + uuid + "'");
+				ResultSet rs = FFA.getMySQL().query("SELECT * FROM FFA WHERE UUID= '" + uuid + "'");
 				rs.next();
 				rs.getInt("DEATHS");
 
@@ -197,7 +197,7 @@ public class Stats {
 		if (playerExists(uuid)) {
 			if (!FFA.getMySQL().isOpened()) return FileSystem.getInt("Users." + uuid + ".Points");
 			try {
-				ResultSet rs = FFA.getMySQL().query("SELECT * FROM LORDFFA WHERE UUID= '" + uuid + "'");
+				ResultSet rs = FFA.getMySQL().query("SELECT * FROM FFA WHERE UUID= '" + uuid + "'");
 				rs.next();
 				i = rs.getInt("POINTS");
 
@@ -213,7 +213,7 @@ public class Stats {
 	public static void setKills(String uuid, int kills) {
 		if (playerExists(uuid)) {
 			if (FFA.getMySQL().isOpened()) {
-				FFA.getMySQL().update("UPDATE LORDFFA SET KILLS= '" + kills + "' WHERE UUID= '" + uuid + "';");
+				FFA.getMySQL().update("UPDATE FFA SET KILLS= '" + kills + "' WHERE UUID= '" + uuid + "';");
 			} else {
 				FileSystem.setAndSave("Users." + uuid + ".Kills", kills);
 			}
@@ -226,7 +226,7 @@ public class Stats {
 	public static void setDeaths(String uuid, int deaths) {
 		if (playerExists(uuid)) {
 			if (FFA.getMySQL().isOpened()) {
-				FFA.getMySQL().update("UPDATE LORDFFA SET DEATHS= '" + deaths + "' WHERE UUID= '" + uuid + "';");
+				FFA.getMySQL().update("UPDATE FFA SET DEATHS= '" + deaths + "' WHERE UUID= '" + uuid + "';");
 			} else {
 				FileSystem.setAndSave("Users." + uuid + ".Deaths", deaths);
 			}
@@ -240,7 +240,7 @@ public class Stats {
 	public static void setPoints(String uuid, int points) {
 		if (playerExists(uuid)) {
 			if (FFA.getMySQL().isOpened()) {
-				FFA.getMySQL().update("UPDATE LORDFFA SET POINTS= '" + points + "' WHERE UUID= '" + uuid + "';");
+				FFA.getMySQL().update("UPDATE FFA SET POINTS= '" + points + "' WHERE UUID= '" + uuid + "';");
 			} else {
 				FileSystem.setAndSave("Users." + uuid + ".Points", points);
 			}

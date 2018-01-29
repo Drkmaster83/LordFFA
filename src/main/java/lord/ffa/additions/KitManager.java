@@ -15,8 +15,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import lord.ffa.plugin.FFA;
 
 public class KitManager {
-	private static File path = new File("plugins/LordFFA");
-	private static File file = new File("plugins/LordFFA", "Kits.yml");
+	private static File path = FFA.getInstance().getDataFolder();
+	private static File file = new File(FFA.getInstance().getDataFolder(), "Kits.yml");
 	private static FileConfiguration configuration = YamlConfiguration.loadConfiguration(file); //TODO possible NPE
 
 	public static void setupKitFile() {
@@ -65,19 +65,18 @@ public class KitManager {
 		if (!kitExists(kit)) {
 			return null;
 		}
-		return FFA.getString(getString("Kits." + kit + ".Message"));
+		return MessageUtils.getString(getString("Kits." + kit + ".Message"));
 	}
 
-	@SuppressWarnings("deprecation")
 	public static ItemStack getKitInvItem(String kit) {
 		if (!kitExists(kit)) {
 			return null;
 		}
 		String[] str = getString("Kits." + kit + ".item.type").split(":");
-		ItemStack g = new ItemStack(Material.getMaterial(Integer.valueOf(str[0]).intValue()), 1,
-				Byte.valueOf(str[1]).byteValue());
+		ItemStack g = new ItemStack(Material.getMaterial(str[0]), 1,
+				Byte.valueOf(str[1]));
 		ItemMeta gMeta = g.getItemMeta();
-		gMeta.setDisplayName(FFA.getString(getString("Kits." + kit + ".item.displayname")));
+		gMeta.setDisplayName(MessageUtils.getString(getString("Kits." + kit + ".item.displayname")));
 		g.setItemMeta(gMeta);
 		return g;
 	}

@@ -2,28 +2,24 @@ Prefix: '&6FFA &7|'
 MySQL:
   Host: 'localhost'
   Port: 3306
-  Database: 'LordFFA'
+  Database: 'FFA'
   Username: 'root'
   Password: '******'
 Kit:
-  item: '1:0'
+  item: 'STONE:0'
   name: '&eKits'
   slot: 4
 Fix-Cooldown: 3
 Kill-Points: 5
 Messages:
-  JoinMessage:
-    Enable: true
-    Message: '%prefix% &e%player% &3has joined ffa server.'
-  QuitMessage:
-    Enable: true
-    Message: '%prefix% &e%player% &3has left ffa server.' 
+  JoinMessage: '%prefix% &e%player% &3has joined ffa server.'
+  QuitMessage: '%prefix% &e%player% &3has left ffa server.' 
   no-command-permission: "%prefix% &cYou don't have permission to do this command."
   save-successfully:
   - '%prefix% &eYour inventory has been saved.'
   - '%prefix% &eTo delete your saved inventory &a/unsave.'
   save-outspawn: "%prefix% &cYou can't save your inventory here."
-  save-notsaved: "%prefix% &cYou don't have saved inventory."
+  save-notsaved: "%prefix% &cYou don't have a saved inventory."
   save-unsaved: '%prefix% &eYour saved inventory has been removed.'
   no-kitpermission: "%prefix% &cYou don't have permission to use this kit."
   stats:
@@ -34,21 +30,21 @@ Messages:
   - '%prefix% &3Ranking: &e#%ranking%'
   - '%prefix% &3KD: &e%kd%'
   top:
-    header: '%prefix% &8&m-------------&r &6Top &8&m-------------'
-    format: '%prefix% &e#%ranking% &a%name% &3with &c%kills%.'
-    footer: '%prefix% &8&m-------------&r &6Top &8&m-------------'
-  fix:
-    successfully: '%prefix% &eThere you go!'
-    spam: "%prefix% &cYou can't spam this command"
+  - '%prefix% &8&m-------------&r &6Top &8&m-------------'
+  - '%prefix% &e#%ranking% &a%name% &3with &c%kills%.'
+  - '%prefix% &8&m-------------&r &6Top &8&m-------------'
+  fix-successfully: '%prefix% &eThere you go!'
+  fix-spam: "%prefix% &cYou can't spam this command"
   death: '%prefix% &3You have been killed by &e%killer% &3with &e%hearts%.'
   killer: '%prefix% &3You have killed &e%death% &3with &e%hearts%.'
   points-killer: '%prefix% &a+%points% points'
   points-death: '%prefix% &c-%points% points'
   killstreak: '%prefix% &e%player% &3is on killstreak.'
+  cannot-leave-spawn: '%prefix% &7You have to select a KIT!'
 Death:
   items:
-  - '262,0,1'
-  - '322,0,1'
+  - 'ARROW,0,1'
+  - 'GOLDEN_APPLE,0,1'
 Scoreboard:
 - '&6FFA'
 - '&r'

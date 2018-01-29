@@ -24,10 +24,10 @@ public class MySQL {
 					conf.getString("MySQL.Username"),
 					conf.getString("MySQL.Password"));
 
-			inst.getLogger().info("[LordFFA] MySQL Connection Connected to Driver Successfully");
+			inst.getLogger().info("[FFA] MySQL Connection Connected to Driver Successfully");
 		} catch (SQLException e) {
 			this.conn = null;
-			FFA.getInstance().getLogger().warning("[LordFFA] (Unable to connect MySQL) Disconnected from Driver reason :" + e.getMessage());
+			FFA.getInstance().getLogger().warning("[FFA] (Unable to connect MySQL) Disconnected from Driver reason :" + e.getMessage());
 		}
 	}
 
@@ -39,10 +39,10 @@ public class MySQL {
 		try {
 			if (this.conn != null) {
 				this.conn.close();
-				FFA.getInstance().getLogger().info("[LordFFA] MySQL Connection Closed from Driver Successfully.");
+				FFA.getInstance().getLogger().info("[FFA] MySQL Connection Closed from Driver Successfully.");
 			}
 		} catch (SQLException e) {
-			FFA.getInstance().getLogger().severe("[LordFFA] Error while we disconnect to MySQL " + e.getMessage());
+			FFA.getInstance().getLogger().severe("[FFA] Error while we disconnect to MySQL " + e.getMessage());
 		}
 	}
 

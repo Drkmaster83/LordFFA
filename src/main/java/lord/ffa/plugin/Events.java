@@ -39,15 +39,22 @@ import org.bukkit.util.Vector;
 
 import lord.ffa.additions.InventoryUtils;
 import lord.ffa.additions.KitManager;
+import lord.ffa.additions.MessageUtils;
 import lord.ffa.stats.Stats;
 
 public class Events implements Listener
 {
+	private FFA plugin;
+	
+	public Events(FFA plugin) {
+		this.plugin = plugin;
+	}
+	
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
-		if (FFA.getInstance().getConfig().getBoolean("Messages.JoinMessage.Enable")) {
-			e.setJoinMessage(FFA.getString(FFA.getInstance().getConfig().getString("Messages.JoinMessage.Message").replace("%player%", e.getPlayer().getName())));
+		if (plugin.getConfig().getString("Messages.JoinMessage") != null) {
+			e.setJoinMessage(MessageUtils.getString(plugin.getConfig().getString("Messages.JoinMessage").replace("%player%", e.getPlayer().getName())));
 		} else {
 			e.setJoinMessage(null);
 		}
@@ -56,8 +63,8 @@ public class Events implements Listener
 	}
 	
 	public void resetPlayer(Player p, boolean justJoined) {
-		if (justJoined && FFA.getSpawnLocation() != null) {
-			p.teleport(FFA.getSpawnLocation());
+		if (justJoined && plugin.getSpawnLocation() != null) {
+			p.teleport(plugin.getSpawnLocation());
 		}
 		p.getInventory().clear();
 		p.getInventory().setHelmet(null);
@@ -67,24 +74,24 @@ public class Events implements Listener
 		p.setHealth(p.getMaxHealth());
 		p.setGameMode(GameMode.ADVENTURE);
 		p.setLevel(0);
-		if(justJoined || !FFA.save.containsKey(p)) {
-			p.getInventory().setItem(FFA.getInstance().getConfig().getInt("Kit.slot"), FFA.getKitItem());
+		if(justJoined || !plugin.save.containsKey(p)) {
+			p.getInventory().setItem(plugin.getConfig().getInt("Kit.slot"), plugin.getKitItem());
 			p.updateInventory();
-			FFA.scoreboardCreate(p);
+			plugin.scoreboardCreate(p);
 		}
 	}
 
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e) {
-		if (FFA.getInstance().getConfig().getBoolean("Messages.QuitMessage.Enable")) {
-			e.setQuitMessage(FFA.getString(FFA.getInstance().getConfig().getString("Messages.QuitMessage.Message").replace("%player%", e.getPlayer().getName())));
+		if (plugin.getConfig().getString("Messages.QuitMessage") != null) {
+			e.setQuitMessage(MessageUtils.getString(plugin.getConfig().getString("Messages.QuitMessage").replace("%player%", e.getPlayer().getName())));
 		} else {
 			e.setQuitMessage(null);
 		}
-		FFA.save.remove(e.getPlayer());
-		FFA.fixSpam.remove(e.getPlayer());
-		FFA.build.remove(e.getPlayer());
-		FFA.target.remove(e.getPlayer());
+		plugin.save.remove(e.getPlayer());
+		plugin.fixSpam.remove(e.getPlayer());
+		plugin.build.remove(e.getPlayer());
+		plugin.target.remove(e.getPlayer());
 	}
 
 	@EventHandler
@@ -92,9 +99,13 @@ public class Events implements Listener
 		Player p = e.getPlayer();
 		p.setPlayerTime(1L, false); //what.
 		p.setPlayerWeather(WeatherType.CLEAR);
-		if (p.getInventory().contains(FFA.getKitItem()) && !FFA.insideSpawn(p.getLocation(), true)) {
-			if (FFA.getSpawnLocation() != null) {
-				p.teleport(FFA.getSpawnLocation());
+		if (p.getInventory().contains(plugin.getKitItem()) && !plugin.insideSpawn(p.getLocation(), true)) {
+			if (plugin.getSpawnLocation() != null) {
+				if(p.getLocation().distanceSquared(plugin.getSpawnLocation()) < 1) { //Player's gonna be trapped.
+					return;
+				}
+				p.teleport(plugin.getSpawnLocation());
+				MessageUtils.sendMessage(p, "cannot-leave-spawn");
 			}
 			return;
 		}
@@ -115,17 +126,17 @@ public class Events implements Listener
 	@EventHandler
 	public void onPlayerRespawnEvent(PlayerRespawnEvent e) {
 		Player p = e.getPlayer();
-		FFA.fixSpam.remove(p);
-		FFA.target.remove(p);
-		if (FFA.getSpawnLocation() != null) {
-			e.setRespawnLocation(FFA.getSpawnLocation());
+		plugin.fixSpam.remove(p);
+		plugin.target.remove(p);
+		if (plugin.getSpawnLocation() != null) {
+			e.setRespawnLocation(plugin.getSpawnLocation());
 		}
 
 		resetPlayer(p, false);
 
-		if(FFA.save.containsKey(p)) {
-			HashMap<Integer, ItemStack> armor = InventoryUtils.itemsFromString(FFA.save.get(p).split("!")[1]);
-			HashMap<Integer, ItemStack> inv = InventoryUtils.itemsFromString(FFA.save.get(p).split("!")[0]);
+		if(plugin.save.containsKey(p)) {
+			HashMap<Integer, ItemStack> armor = InventoryUtils.itemsFromString(plugin.save.get(p).split("!")[1]);
+			HashMap<Integer, ItemStack> inv = InventoryUtils.itemsFromString(plugin.save.get(p).split("!")[0]);
 			int is = 0;
 			for (Integer i : armor.keySet()) {
 				if (is == 0)
@@ -137,7 +148,6 @@ public class Events implements Listener
 				if (is == 3) {
 					p.getInventory().setHelmet(armor.get(i));
 				}
-
 				is++;
 			}
 
@@ -152,26 +162,26 @@ public class Events implements Listener
 				}
 			}
 			p.updateInventory();
-			FFA.scoreboardCreate(p);
+			plugin.scoreboardCreate(p);
 		}
 	}
 
 	@EventHandler
 	public void onPlayerDamage(EntityDamageByEntityEvent e)	{
 		if (!(e.getEntity() instanceof Player)) return;
-		if (FFA.insideSpawn(e.getEntity().getLocation())) {
+		if (plugin.insideSpawn(e.getEntity().getLocation())) {
 			e.setCancelled(true);
 			return;
 		}
 		Player d = (Player) e.getEntity();
 		if (e.getDamager() instanceof Player) {
 			Player k = (Player)e.getDamager();
-			FFA.target.put(d, k);
+			plugin.target.put(d, k);
 		}
 		else if (e.getDamager() instanceof Projectile) {
 			Projectile pro = (Projectile)e.getDamager();
 			Player k = (Player)pro.getShooter();
-			FFA.target.put(d, k);
+			plugin.target.put(d, k);
 		}
 	}
 
@@ -181,8 +191,8 @@ public class Events implements Listener
 		Action action = e.getAction();
 		if(action != Action.RIGHT_CLICK_BLOCK && action != Action.RIGHT_CLICK_AIR) return;
 		if(item == null || item.getType() == Material.AIR || !item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) return; //Fix NPE here
-		if(item.getItemMeta().getDisplayName().equals(FFA.getKitItem().getItemMeta().getDisplayName()) && FFA.insideSpawn(e.getPlayer().getLocation())) {
-			Inventory inv = Bukkit.createInventory(null, 9, FFA.getString("&eFFA Kits"));
+		if(item.getItemMeta().getDisplayName().equals(plugin.getKitItem().getItemMeta().getDisplayName()) && plugin.insideSpawn(e.getPlayer().getLocation())) {
+			Inventory inv = Bukkit.createInventory(null, 9, MessageUtils.cc("&eFFA Kits"));
 			for (String kit : KitManager.getSection("Kits").getKeys(false)) {
 				inv.setItem(KitManager.getKitSlot(kit), KitManager.getKitInvItem(kit));
 			}
@@ -195,7 +205,7 @@ public class Events implements Listener
 		ItemStack item = e.getCurrentItem();
 		Inventory inv = e.getInventory();
 		Player p = (Player) e.getWhoClicked();
-		if (!inv.getName().equals(FFA.getString("&eFFA Kits"))) return;
+		if (!inv.getName().equals(MessageUtils.cc("&eFFA Kits"))) return;
 
 		e.setCancelled(true);
 		if (item == null || item.getType() == Material.AIR || !item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) return;
@@ -230,12 +240,12 @@ public class Events implements Listener
 						}
 					}
 
-					p.getInventory().remove(FFA.getKitItem());
-					p.sendMessage(FFA.getString(KitManager.getKitMessage(kit)));
+					p.getInventory().remove(plugin.getKitItem());
+					MessageUtils.msg(p, KitManager.getKitMessage(kit));
 
 					p.updateInventory();
 				} else {
-					p.sendMessage(FFA.getString(FFA.getInstance().getConfig().getString("Messages.no-kitpermission")));
+					MessageUtils.sendMessage(p, "no-kitpermission");
 				}
 			}
 		}
@@ -248,8 +258,8 @@ public class Events implements Listener
 		Player k = null;
 		if (died.getKiller() instanceof Player) {
 			k = died.getKiller();
-		} else if (FFA.target.containsKey(died)) {
-			k = (Player)FFA.target.get(died);
+		} else if (plugin.target.containsKey(died)) {
+			k = plugin.target.get(died);
 		}
 
 		if (k == null) return;
@@ -259,11 +269,11 @@ public class Events implements Listener
 		k.setLevel(k.getLevel() + 1);
 		k.setHealth(k.getMaxHealth());
 		String hearts = df.format(k.getHealth() / 2.0D);
-		FileConfiguration conf = FFA.getInstance().getConfig();
-		died.sendMessage(FFA.getString(conf.getString("Messages.death").replace("%hearts%", hearts).replace("%killer%", k.getName())));
-		died.sendMessage(FFA.getString(conf.getString("Messages.points-death").replace("%points%", conf.getInt("Kill-Points")+"")));
-		k.sendMessage(FFA.getString(conf.getString("Messages.killer").replace("%hearts%", hearts).replace("%death%", died.getName())));
-		k.sendMessage(FFA.getString(conf.getString("Messages.points-killer").replace("%points%", conf.getInt("Kill-Points")+"")));
+		FileConfiguration conf = plugin.getConfig();
+		died.sendMessage(MessageUtils.getString(conf.getString("Messages.death").replace("%hearts%", hearts).replace("%killer%", k.getName()))); //TODO:Proper message system
+		died.sendMessage(MessageUtils.getString(conf.getString("Messages.points-death").replace("%points%", conf.getInt("Kill-Points")+"")));
+		k.sendMessage(MessageUtils.getString(conf.getString("Messages.killer").replace("%hearts%", hearts).replace("%death%", died.getName())));
+		k.sendMessage(MessageUtils.getString(conf.getString("Messages.points-killer").replace("%points%", conf.getInt("Kill-Points")+"")));
 		
 		new BukkitRunnable() {
 			@Override
@@ -275,18 +285,18 @@ public class Events implements Listener
 					Stats.addPoints(died.getUniqueId().toString(), conf.getInt("Kill-Points"));
 				}
 			}
-		}.runTaskAsynchronously(FFA.getInstance());
+		}.runTaskAsynchronously(plugin);
 
 		if (k.getLevel() == 5) {
 			k.setLevel(0);
-			Bukkit.broadcastMessage(FFA.getString(conf.getString("Messages.killstreak").replace("%player%", k.getName())));
+			died.getServer().broadcastMessage(MessageUtils.getString(conf.getString("Messages.killstreak").replace("%player%", k.getName())));
 			k.playSound(k.getLocation(), Sound.LEVEL_UP, 10.0F, 20.0F);
 		}
-		for (ItemStack item : FFA.deathItems()) {
+		for (ItemStack item : plugin.deathItems()) {
 			k.getInventory().addItem(new ItemStack[] { item });
 		}
 		k.updateInventory();
-		FFA.scoreboardCreate(k);
+		plugin.scoreboardCreate(k);
 	}
 
 	//Boring/easy logic events
@@ -296,7 +306,7 @@ public class Events implements Listener
 		Player p = e.getPlayer();
 		final Block b = e.getBlock();
 		if (b.getType() == Material.FIRE) {
-			Bukkit.getScheduler().scheduleSyncDelayedTask(FFA.getInstance(), new Runnable() {
+			p.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 				public void run() {
 					if(b.getType() == Material.FIRE) b.setType(Material.AIR);
 				}
@@ -304,7 +314,7 @@ public class Events implements Listener
 			return;
 		}
 
-		if (!FFA.build.contains(p)) {
+		if (!plugin.build.contains(p)) {
 			e.setCancelled(true);
 		}
 	}
@@ -312,7 +322,7 @@ public class Events implements Listener
 	@EventHandler
 	public void onPlayerPlace(BlockBreakEvent e) {
 		Player p = e.getPlayer();
-		if (!FFA.build.contains(p)) {
+		if (!plugin.build.contains(p)) {
 			e.setCancelled(true);
 		}
 	}
@@ -323,21 +333,21 @@ public class Events implements Listener
 			e.setCancelled(true);
 			return;
 		}
-		if (FFA.insideSpawn(e.getEntity().getLocation())) {
+		if (plugin.insideSpawn(e.getEntity().getLocation())) {
 			e.setCancelled(true);
 		}
 	}
 
 	@EventHandler
 	public void on(PlayerPickupItemEvent e) {
-		if (!FFA.build.contains(e.getPlayer())) {
+		if (!plugin.build.contains(e.getPlayer())) {
 			e.setCancelled(true);
 		}
 	}
 
 	@EventHandler
 	public void on(PlayerDropItemEvent e) {
-		if (!FFA.build.contains(e.getPlayer())) {
+		if (!plugin.build.contains(e.getPlayer())) {
 			e.setCancelled(true);
 		}
 	}

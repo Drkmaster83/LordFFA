@@ -1,2 +1,2 @@
-# LordFFA
-Recoded Spigot LordFFA plugin (untested, but compiled for Minecraft 1.8.8).
+# FFA
+Recoded Spigot FFA plugin (untested, but compiled for Minecraft 1.8.8).

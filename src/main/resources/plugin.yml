@@ -1,4 +1,4 @@
-name: LordFFA
+name: FFA
 main: lord.ffa.plugin.FFA
 version: 1.25
 descripton: Some sort of FFA plugin.

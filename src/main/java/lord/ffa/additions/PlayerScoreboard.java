@@ -2,36 +2,35 @@ package lord.ffa.additions;
 
 import java.util.HashMap;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
 
-import lord.ffa.plugin.FFA;
-
-public class Scoreboard {
+public class PlayerScoreboard {
 	private String title = "";
-	private org.bukkit.scoreboard.Scoreboard scoreboard;
+	private Scoreboard scoreboard;
 	private HashMap<String, Integer> scores;
 	private Player p;
 
-	public Scoreboard(Player p) {
-		this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+	public PlayerScoreboard(Player p) {
+		this.scoreboard = p.getServer().getScoreboardManager().getNewScoreboard();
 		this.scores = new HashMap<>();
 		this.p = p;
+		this.title = "";
 	}
 
 	public void setTitle(String title) {
-		this.title = FFA.getString(title);
+		this.title = MessageUtils.getString(title);
 	}
 
 	public void addScore(String score, int i) {
-		this.scores.put(FFA.getString(fixScore(score)), i);
+		this.scores.put(MessageUtils.getString(fixScore(score)), i);
 	}
 
 	private String fixScore(String text) {
 		if (this.scores.containsKey(text)) {
-			text = text + "&r";
+			text += "&r";
 		}
 		if (text.length() > 48) {
 			text.substring(0, 47);
@@ -39,9 +38,8 @@ public class Scoreboard {
 		return text;
 	}
 
-//	@SuppressWarnings("deprecation")
 	public void build() {
-		Objective o = this.scoreboard.registerNewObjective("obj", "dummy");
+		Objective o = this.scoreboard.registerNewObjective("ffaObj", "dummy");
 		o.setDisplaySlot(DisplaySlot.SIDEBAR);
 		o.setDisplayName(this.title);
 
