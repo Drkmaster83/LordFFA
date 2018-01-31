@@ -53,7 +53,7 @@ public class Events implements Listener
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
-		String join = plugin.getConfig().getString("Messages.join-message");
+		String join = MessageUtils.getMessage("join-message");
 		if (join != null && !join.isEmpty()) {
 			e.setJoinMessage(MessageUtils.formatString(join.replace("%player%", e.getPlayer().getName())));
 		} else {
@@ -84,7 +84,7 @@ public class Events implements Listener
 
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e) {
-		String quit = plugin.getConfig().getString("Messages.quit-message");
+		String quit = MessageUtils.getMessage("quit-message");
 		if (quit != null && !quit.isEmpty()) {
 			e.setQuitMessage(MessageUtils.formatString(quit.replace("%player%", e.getPlayer().getName())));
 		} else {
@@ -269,14 +269,14 @@ public class Events implements Listener
 		if (k == null) return;
 		final Player kill = k;
 		DecimalFormat df = new DecimalFormat("####.##");
-
+		
 		k.setLevel(k.getLevel() + 1);
 		k.setHealth(k.getMaxHealth());
 		String hearts = df.format(k.getHealth() / 2.0D);
-		MessageUtils.msg(died, MessageUtils.getMessage("Messages.killed").replace("%hearts%", hearts).replace("%killer%", k.getName()));
-		MessageUtils.msg(died, MessageUtils.getMessage("Messages.points-killed").replace("%points%", FFA.getDefConfig().getInt("Kill-Points")+""));
-		MessageUtils.msg(k, MessageUtils.getMessage("Messages.killer").replace("%hearts%", hearts).replace("%killed%", died.getName()));
-		MessageUtils.msg(k, MessageUtils.getMessage("Messages.points-killer").replace("%points%", FFA.getDefConfig().getInt("Kill-Points")+""));
+		MessageUtils.msg(died, MessageUtils.getMessage("killed").replace("%hearts%", hearts).replace("%killer%", k.getName()));
+		MessageUtils.msg(died, MessageUtils.getMessage("points-killed").replace("%points%", FFA.getDefConfig().getInt("Kill-Points")+""));
+		MessageUtils.msg(k, MessageUtils.getMessage("killer").replace("%hearts%", hearts).replace("%killed%", died.getName()));
+		MessageUtils.msg(k, MessageUtils.getMessage("points-killer").replace("%points%", FFA.getDefConfig().getInt("Kill-Points")+""));
 		
 		new BukkitRunnable() {
 			@Override
@@ -292,12 +292,12 @@ public class Events implements Listener
 
 		if (k.getLevel() == 5) {
 			k.setLevel(0);
-			String broadcast = MessageUtils.getMessage("Messages.killstreak").replace("%player%", k.getName());
+			String broadcast = MessageUtils.getMessage("killstreak").replace("%player%", k.getName());
 			if(broadcast != null && !broadcast.isEmpty()) died.getServer().broadcastMessage(broadcast);
 			k.playSound(k.getLocation(), Sound.LEVEL_UP, 10.0F, 20.0F);
 		}
 		for (ItemStack item : plugin.deathItems()) {
-			k.getInventory().addItem(new ItemStack[] { item });
+			k.getInventory().addItem(item);
 		}
 		k.updateInventory();
 		plugin.scoreboardCreate(k);
@@ -343,14 +343,14 @@ public class Events implements Listener
 	}
 
 	@EventHandler
-	public void on(PlayerPickupItemEvent e) {
+	public void onPickup(PlayerPickupItemEvent e) {
 		if (!plugin.build.contains(e.getPlayer())) {
 			e.setCancelled(true);
 		}
 	}
 
 	@EventHandler
-	public void on(PlayerDropItemEvent e) {
+	public void onDrop(PlayerDropItemEvent e) {
 		if (!plugin.build.contains(e.getPlayer())) {
 			e.setCancelled(true);
 		}

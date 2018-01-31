@@ -2,6 +2,7 @@ package lord.ffa.plugin;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -35,6 +36,11 @@ public class FFA extends JavaPlugin
 		registerCommands();
 		setupMySQL();
 		registerEvents();
+	}
+	
+	@Override
+	public void onDisable() {
+		Events.refresh();
 	}
 	
 	public void createConfigurations() {
@@ -142,11 +148,18 @@ public class FFA extends JavaPlugin
 		board.sendScoreboard();
 	}
 
-	public ArrayList<ItemStack> deathItems() {
-		ArrayList<ItemStack> items = new ArrayList<>();
+	public List<ItemStack> deathItems() {
+		List<ItemStack> items = new ArrayList<>();
 		for (String str : getInstance().getConfig().getStringList("Death.items")) {
 			String[] string = str.split(",");
-			ItemStack item = new ItemStack(Material.getMaterial(string[0]), Integer.valueOf(string[1]), Short.valueOf(string[2]));
+			Material mat = Material.getMaterial(string[0]);
+			if(mat == null) {
+				getLogger().warning("Material name \"" + string[0] + "\" is invalid! Ensure that you are not using item IDs.");
+				continue;
+			}
+			int amount = string.length >= 2 ? Integer.valueOf(string[1]) : 1;
+			short data = string.length >= 3 ? Short.valueOf(string[2]) : 0;
+			ItemStack item = new ItemStack(mat, amount, data);
 			items.add(item);
 		}
 		return items;

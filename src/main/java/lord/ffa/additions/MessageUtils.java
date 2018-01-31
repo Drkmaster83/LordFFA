@@ -48,6 +48,7 @@ public class MessageUtils {
 		String s = FFA.getDefConfig().getString("Messages."+path);
 		if(s == null) {
 			FFA.getInstance().getLogger().warning("(getMessage method) Message \"" + path + "\" is not defined in config - contact plugin developer if this is unexpected!");
+			return ""; //Get parsed as empty, causes it not to be send to the player.
 		}
 		return formatString(FFA.getDefConfig().getString("Messages."+path));
 	}

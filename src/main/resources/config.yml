@@ -26,7 +26,7 @@ Messages:
   fix-successfully: '%prefix% &eThere you go!'
 #  fix-spam: '%prefix% &cYou can''t spam this command'
   killed: '%prefix% &3You have been killed by &e%killer% &3with &e%hearts% hearts.'
-  killer: '%prefix% &3You have killed &e%death% &3with &e%hearts% hearts remaining.'
+  killer: '%prefix% &3You have killed &e%killed% &3with &e%hearts% hearts remaining.'
   points-killer: '%prefix% &a+%points% points'
   points-killed: '%prefix% &c-%points% points'
   killstreak: '%prefix% &e%player% &3is on killstreak.'
