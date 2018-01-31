@@ -1,0 +1,19 @@
+Kits:
+  Premium:
+    item:
+      type: BOOK:0
+      slot: 7
+      displayname: '&6Premium Kit &7(&aRight Click&7)'
+    Message: '%prefix% &7You have recieved your kit..'
+    Permission: kit.premium
+    Armor: IRON_BOOTS:0:1:0:0;;/IRON_LEGGINGS:0:1:0:1;;/IRON_CHESTPLATE:0:1:0:2;;/IRON_HELMET:0:1:0:3;;
+    Inventory: IRON_SWORD:0:1:0:0;;/BOW:0:1:0:1;;/FISHING_ROD:0:1:0:2;;/null/null/null/null/null/ARROW:0:8:0:8;;/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null
+  Default:
+    item:
+      type: BOOK:0
+      slot: 3
+      displayname: '&6Default Kit &7(&aRight Click&7)'
+    Message: '%prefix% &7You have recieved your kit..'
+    Permission: kit.default
+    Armor: IRON_BOOTS:0:1:0:0;;/IRON_LEGGINGS:0:1:0:1;;/CHAINMAIL_CHESTPLATE:0:1:0:2;;/IRON_HELMET:0:1:0:3;;
+    Inventory: IRON_SWORD:0:1:0:0;;/BOW:0:1:0:1;;/FISHING_ROD:0:1:0:2;;/null/null/null/null/null/ARROW:0:8:0:8;;/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null

@@ -34,28 +34,13 @@ public class Commands implements CommandExecutor {
 				return true;
 			}
 			if (args.length == 0) {
-				MessageUtils.msg(p, "&8&m-------------- &r&aFFA Help &8&m--------------");
-				MessageUtils.msg(p, "");
-				MessageUtils.msg(p, "                 &ePlugin Coded by                   ");
-				MessageUtils.msg(p, "                   &aLordOfSupeRz                    ");
-				MessageUtils.msg(p, "");
-				MessageUtils.msg(p, "%prefix% &3/ffa setspawn");
-				MessageUtils.msg(p, "%prefix% &3/ffa setregion <1 - 2>");
-				MessageUtils.msg(p, "%prefix% &3/ffa resetregion");
-				MessageUtils.msg(p, "%prefix% &3/ffa reset <player>");
-				MessageUtils.msg(p, "%prefix% &3/ffa addkit <name> <permission>");
-				MessageUtils.msg(p, "%prefix% &3/ffa build");
-				MessageUtils.msg(p, "%prefix% &3/top");
-				MessageUtils.msg(p, "%prefix% &3/fix");
-				MessageUtils.msg(p, "%prefix% &3/save");
-				MessageUtils.msg(p, "%prefix% &3/unsave");
-				MessageUtils.msg(p, "&8&m-----------------------------------------");
+				MessageUtils.sendMessage(p, "base-command-help");
 				return true;
 			}
 
 			if (args[0].equalsIgnoreCase("setspawn")) {
 				if (args.length != 1) {
-					MessageUtils.msg(p, "%prefix% &3/ffa setspawn");
+					MessageUtils.sendMessage(p, "usage-setspawn");
 					return true;
 				}
 				plugin.getConfig().set("Spawn.world", p.getWorld().getName());
@@ -65,33 +50,33 @@ public class Commands implements CommandExecutor {
 				plugin.getConfig().set("Spawn.yaw", p.getLocation().getYaw());
 				plugin.getConfig().set("Spawn.pitch", p.getLocation().getPitch());
 				plugin.saveConfig();
-				MessageUtils.msg(p, "%prefix% &aYou have set the spawn location successfully.");
+				MessageUtils.sendMessage(p, "spawn-set-successfully");
 			}
 			else if (args[0].equalsIgnoreCase("build")) {
 				if (args.length != 1) {
-					MessageUtils.msg(p, "%prefix% &3/ffa build");
+					MessageUtils.sendMessage(p, "usage-build");
 					return true;
 				}
 				if (plugin.build.contains(p)) {
-					MessageUtils.msg(p, "%prefix% &cYou are now unable to build.");
+					MessageUtils.sendMessage(p, "can-no-longer-build");
 					plugin.build.remove(p);
 				} else {
-					MessageUtils.msg(p, "%prefix% &aYou are now able to build.");
+					MessageUtils.sendMessage(p, "can-now-build");
 					plugin.build.add(p);
 				}
 			}
 			else if (args[0].equalsIgnoreCase("addkit")) {
 				if (args.length != 3) {
-					MessageUtils.msg(p, "%prefix% &3/ffa addkit <name> <permission>");
+					MessageUtils.sendMessage(p, "usage-addkit");
 					return true;
 				}
 				KitManager.addKit(args[1], p.getInventory(), args[2]);
-				MessageUtils.msg(p, "%prefix% &aYou have added the '" + args[1] + "' kit.");
-				MessageUtils.msg(p, "%prefix% &aPlease setup kit settings from Kits.yml.");
+				MessageUtils.msg(p, MessageUtils.getMessage("kit-added-name").replace("%kitname%", args[1]));
+				MessageUtils.sendMessage(p, "setup-kit-yml");
 			}
 			else if (args[0].equalsIgnoreCase("reset")) {
 				if (args.length != 2) {
-					MessageUtils.msg(p, "%prefix% &3/ffa reset <player>");
+					MessageUtils.sendMessage(p, "usage-reset");
 
 					return true;
 				}
@@ -100,25 +85,25 @@ public class Commands implements CommandExecutor {
 					Stats.setKills(target.getUniqueId().toString(), 0);
 					Stats.setDeaths(target.getUniqueId().toString(), 0);
 					Stats.setPoints(target.getUniqueId().toString(), 0);
-					MessageUtils.msg(p, "%prefix% &aYou have reset &e" + target.getName() + "'s &astats.");
+					MessageUtils.msg(p, MessageUtils.getMessage("stats-reset-for").replace("%target%", target.getName()));
 
-					MessageUtils.msg(target, "%prefix% &aYour stats have been reset by &e" + p.getName() + ".");
+					MessageUtils.msg(target, MessageUtils.getMessage("stats-reset-by").replace("%resetter%", p.getName()));
 				} else {
 					@SuppressWarnings("deprecation")
-					OfflinePlayer target2 = plugin.getServer().getOfflinePlayer(args[1]);
-					if (!Stats.playerExists(target2.getUniqueId().toString())) {
-						MessageUtils.msg(p, "%prefix% &cThere is not a player with that name in the database.");
+					OfflinePlayer offTarget = plugin.getServer().getOfflinePlayer(args[1]);
+					if (!Stats.playerExists(offTarget.getUniqueId().toString())) {
+						MessageUtils.sendMessage(p, "database-nonexistent-player");
 						return true;
 					}
-					Stats.setKills(target2.getUniqueId().toString(), 0);
-					Stats.setDeaths(target2.getUniqueId().toString(), 0);
-					Stats.setPoints(target2.getUniqueId().toString(), 0);
-					MessageUtils.msg(p, "%prefix% &aYou have reset &e" + target2.getName() + "'s &astats.");
+					Stats.setKills(offTarget.getUniqueId().toString(), 0);
+					Stats.setDeaths(offTarget.getUniqueId().toString(), 0);
+					Stats.setPoints(offTarget.getUniqueId().toString(), 0);
+					MessageUtils.msg(p, MessageUtils.getMessage("stats-reset-for").replace("%target%", offTarget.getName()));
 				}
 			}
 			else if (args[0].equalsIgnoreCase("setregion")) {
 				if (args.length != 2) {
-					MessageUtils.msg(p, "%prefix% &3/ffa setregion <1 - 2>");
+					MessageUtils.sendMessage(p, "usage-setregion");
 
 					return true;
 				}
@@ -126,11 +111,11 @@ public class Commands implements CommandExecutor {
 				try {
 					i = Integer.parseInt(args[1]);
 				} catch (NumberFormatException e) {
-					MessageUtils.msg(p, "%prefix% &cYou must provide an integer value (1 or 2).");
+					MessageUtils.sendMessage(p, "error-provide-num-1-or-2");
 					return true;
 				}
 				if (i != 1 && i != 2) {
-					MessageUtils.msg(p, "%prefix% &cYou must provide 1 or 2 as the value.");
+					MessageUtils.sendMessage(p, "error-provide-1-or-2");
 					return true;
 				}
 				plugin.getConfig().set("Region." + i + ".world", p.getWorld().getName());
@@ -138,45 +123,56 @@ public class Commands implements CommandExecutor {
 				plugin.getConfig().set("Region." + i + ".y", p.getLocation().getY());
 				plugin.getConfig().set("Region." + i + ".z", p.getLocation().getZ());
 				plugin.saveConfig();
-				MessageUtils.msg(p, "%prefix% &aYou have set region point #" + i + " successfully.");
+				MessageUtils.msg(p, MessageUtils.getMessage("region-point-set").replace("%point%", i+""));
 			}
 			else if (args[0].equalsIgnoreCase("regionclear") || args[0].equalsIgnoreCase("clearregion") || args[0].equalsIgnoreCase("resetregion")) {
 				plugin.getConfig().set("Region", null);
 				plugin.saveConfig();
-				MessageUtils.msg(p, "%prefix% &aYou've cleared the regions! Spawn protection and other functions no longer apply.");
+				MessageUtils.sendMessage(p, "region-points-cleared");
+			}
+			else if(args[0].equalsIgnoreCase("reload")) {
+				FFA.getDefConfig().reload();
+				MessageUtils.refresh();
+				Events.refresh();
+				FFA.getKits().reload();
+				FFA.getStats().reload();
+				MessageUtils.sendMessage(p, "configs-reloaded");
 			}
 		}
 		else if (cmd.getName().equalsIgnoreCase("Fix")) {
-			if (plugin.fixSpam.contains(p)) {
+			/*if (plugin.fixSpam.contains(p)) {
 				MessageUtils.sendMessage(p, "fix.spam");
 				return true;
 			}
-			plugin.fixSpam.add(p);
+			plugin.fixSpam.add(p);*/
 			for (Player s : p.getServer().getOnlinePlayers()) {
 				s.hidePlayer(p);
 				s.showPlayer(p);
 			}
-			p.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			/*p.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 				public void run() {
 					plugin.fixSpam.remove(p);
 				}
-			}, plugin.getConfig().getInt("Fix-Cooldown") * 20);
+			}, plugin.getConfig().getInt("Fix-Cooldown") * 20);*/
 			MessageUtils.sendMessage(p, "fix-successfully");
 		}
 		else if (cmd.getName().equalsIgnoreCase("Top")) {
 			String uuid;
 			List<String> messages = plugin.getConfig().getStringList("Messages.top");
-			MessageUtils.sendMessage(p, messages.get(0));
-			int i = 0;
-			Iterator<String> it = Stats.getTopPlayers().iterator();
-			for (; it.hasNext();) {
-				uuid = (String) it.next();
-				i++;
-				MessageUtils.msg(p, messages.get(1).replace("%name%", Stats.getName(uuid))
-						.replace("%kills%", Stats.getKills(uuid) + "").replace("%ranking%", i + ""));
+			for(String s : messages) {
+				if(!s.toLowerCase().startsWith("%playerformat%")) {
+					MessageUtils.msg(p, s);
+					continue;
+				}
+				int i = 0;
+				String format = s.substring("%playerformat%".length());
+				Iterator<String> it = Stats.getTopPlayers().iterator();
+				for (; it.hasNext();) {
+					uuid = (String) it.next();
+					MessageUtils.msg(p, format.replace("%name%", Stats.getName(uuid))
+							.replace("%kills%", Stats.getKills(uuid) + "").replace("%ranking%", ++i + ""));
+				}
 			}
-
-			MessageUtils.sendMessage(p, messages.get(2));
 		}
 		else if (cmd.getName().equalsIgnoreCase("Save")) {
 			if (plugin.insideSpawn(p.getLocation())) {
@@ -235,18 +231,18 @@ public class Commands implements CommandExecutor {
 					}
 				} else {
 					@SuppressWarnings("deprecation")
-					OfflinePlayer target2 = plugin.getServer().getOfflinePlayer(args[0]);
-					if (!Stats.playerExists(target2.getUniqueId().toString())) {
-						MessageUtils.msg(p, "%prefix% &cThere is not a player with that name in the database.");
+					OfflinePlayer offTarget = plugin.getServer().getOfflinePlayer(args[0]);
+					if (!Stats.playerExists(offTarget.getUniqueId().toString())) {
+						MessageUtils.sendMessage(p, "database-nonexistent-player");
 						return true;
 					}
-					int kills = Stats.getKills(target2.getUniqueId().toString());
-					int deaths = Stats.getDeaths(target2.getUniqueId().toString());
-					int points = Stats.getPoints(target2.getUniqueId().toString());
-					int ranking = Stats.getDeaths(target2.getUniqueId().toString());
+					int kills = Stats.getKills(offTarget.getUniqueId().toString());
+					int deaths = Stats.getDeaths(offTarget.getUniqueId().toString());
+					int points = Stats.getPoints(offTarget.getUniqueId().toString());
+					int ranking = Stats.getDeaths(offTarget.getUniqueId().toString());
 					String kd = deaths == 0 ? (kills != 0 ? "Inf" : "0.0") : df.format(kills / deaths);
 					for (String str : plugin.getConfig().getStringList("Messages.stats")) {
-						MessageUtils.msg(p, str.replace("%name%", target2.getName()).replace("%kills%", kills + "")
+						MessageUtils.msg(p, str.replace("%name%", offTarget.getName()).replace("%kills%", kills + "")
 										.replace("%deaths%", deaths + "").replace("%points%", points + "")
 										.replace("%ranking%", ranking + "").replace("%kd%", kd));
 					}

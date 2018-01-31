@@ -12,10 +12,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import lord.ffa.additions.KitManager;
 import lord.ffa.additions.MessageUtils;
 import lord.ffa.additions.PlayerScoreboard;
-import lord.ffa.stats.FileSystem;
+import lord.ffa.additions.YMLConfig;
 import lord.ffa.stats.MySQL;
 import lord.ffa.stats.Stats;
 
@@ -23,25 +22,33 @@ public class FFA extends JavaPlugin
 {
 	public static FFA instance;
 	public static MySQL mysql;
+	private static YMLConfig config, stats, kits;
 	public HashMap<Player, String> save = new HashMap<>();
-	public ArrayList<Player> fixSpam = new ArrayList<>();
+	//public ArrayList<Player> fixSpam = new ArrayList<>();
 	public ArrayList<Player> build = new ArrayList<>();
 	public HashMap<Player, Player> target = new HashMap<>();
 
 	@Override
-	public void onEnable()
-	{
+	public void onEnable() {
 		instance = this;
+		createConfigurations();
+		registerCommands();
+		setupMySQL();
+		registerEvents();
+	}
+	
+	public void createConfigurations() {
+		if(config == null) config = new YMLConfig(this, "config.yml");
 		getConfig().options().copyHeader(true);
 		getConfig().options().header("Welcome to FFA plugin. Plugin was made by LordOfSupeRz\n"
 				                   + "This plugin is very simple and easy to use.\n"
 				                   + "Enjoy with customizable config. You can edit messages and plugin settings");
-
-		getConfig().options().copyDefaults(true);
-		saveDefaultConfig();
-		saveConfig();
-		FileSystem.setupStatsFile();
-		KitManager.setupKitFile();
+		getConfig().save();
+		if(stats == null) stats = new YMLConfig(this, "stats.yml");
+		if(kits == null) kits = new YMLConfig(this, "kits.yml");
+	}
+	
+	public void registerCommands() {
 		Commands cmdExec = new Commands(this);
 		getCommand("FreeForAll").setExecutor(cmdExec);
 		getCommand("Fix").setExecutor(cmdExec);
@@ -49,17 +56,18 @@ public class FFA extends JavaPlugin
 		getCommand("Save").setExecutor(cmdExec);
 		getCommand("Unsave").setExecutor(cmdExec);
 		getCommand("Stats").setExecutor(cmdExec);
-
-		getServer().getPluginManager().registerEvents(new Events(this), this);
+	}
+	
+	public void setupMySQL() {
 		mysql = new MySQL();
 		mysql.connect();
 		if (mysql.isOpened()) {
 			mysql.update("CREATE TABLE IF NOT EXISTS FFA(UUID varchar(64), KILLS int, DEATHS int, POINTS int, NAME varchar(64));");
 		}
 	}
-
-	public static MySQL getMySQL() {
-		return mysql;
+	
+	public void registerEvents() {
+		getServer().getPluginManager().registerEvents(new Events(this), this);
 	}
 
 	public Location getSpawnLocation() {
@@ -112,21 +120,20 @@ public class FFA extends JavaPlugin
 		return item;
 	}
 
-	public void scoreboardCreate(Player p)
-	{
+	public void scoreboardCreate(Player p) {
 		PlayerScoreboard board = new PlayerScoreboard(p);
 		boolean title = true;
 		int i = getInstance().getConfig().getStringList("Scoreboard").size() - 1;
 		for (String str : getInstance().getConfig().getStringList("Scoreboard")) {
 			if (title) {
-				board.setTitle(MessageUtils.getString(str));
+				board.setTitle(MessageUtils.formatString(str));
 				title = false;
 			} else {
 				str = str.replace("%kills%", Stats.getKills(p.getUniqueId().toString())+"");
 				str = str.replace("%deaths%", Stats.getDeaths(p.getUniqueId().toString())+"");
 				str = str.replace("%points%", Stats.getPoints(p.getUniqueId().toString())+"");
 				str = str.replace("%name%", p.getName());
-				board.addScore(MessageUtils.getString(str), i);
+				board.addScore(MessageUtils.formatString(str), i);
 				i--;
 			}
 		}
@@ -135,8 +142,7 @@ public class FFA extends JavaPlugin
 		board.sendScoreboard();
 	}
 
-	public ArrayList<ItemStack> deathItems()
-	{
+	public ArrayList<ItemStack> deathItems() {
 		ArrayList<ItemStack> items = new ArrayList<>();
 		for (String str : getInstance().getConfig().getStringList("Death.items")) {
 			String[] string = str.split(",");
@@ -146,8 +152,41 @@ public class FFA extends JavaPlugin
 		return items;
 	}
 	
-	public static FFA getInstance()
-	{
+	@Override
+	public YMLConfig getConfig() {
+		return config;
+	}
+	
+	public static YMLConfig getDefConfig() {
+		return config;
+	}
+	
+	@Override
+	public void reloadConfig() {
+		config.reload();
+	}
+	
+	@Override
+	public void saveConfig() {
+		config.save();
+	}
+	
+	public static YMLConfig getStats() {
+		if(stats == null) stats = new YMLConfig(getInstance(), "stats.yml");
+		return stats;
+	}
+	
+	public static YMLConfig getKits() {
+		if(kits == null) kits = new YMLConfig(getInstance(), "kits.yml");
+		return kits;
+	}
+
+	public static MySQL getMySQL() {
+		return mysql;
+	}
+	
+	public static FFA getInstance()	{
+		if(instance == null) instance = FFA.getPlugin(FFA.class);
 		return instance;
 	}
 }

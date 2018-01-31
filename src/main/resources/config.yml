@@ -8,20 +8,51 @@ MySQL:
 Kit:
   item: 'STONE:0'
   name: '&eKits'
+  invName: '&eFFA Kits'
   slot: 4
-Fix-Cooldown: 3
+#Fix-Cooldown: 3
 Kill-Points: 5
 Messages:
-  JoinMessage: '%prefix% &e%player% &3has joined ffa server.'
-  QuitMessage: '%prefix% &e%player% &3has left ffa server.' 
-  no-command-permission: "%prefix% &cYou don't have permission to do this command."
+  join-message: '%prefix% &e%player% &3has joined ffa server.'
+  quit-message: '%prefix% &e%player% &3has left ffa server.' 
+  no-command-permission: '%prefix% &cYou don''t have permission to do this command.'
+  no-kitpermission: '%prefix% &cYou don''t have permission to use this kit.'
   save-successfully:
   - '%prefix% &eYour inventory has been saved.'
   - '%prefix% &eTo delete your saved inventory &a/unsave.'
-  save-outspawn: "%prefix% &cYou can't save your inventory here."
-  save-notsaved: "%prefix% &cYou don't have a saved inventory."
+  save-outspawn: '%prefix% &cYou can''t save your inventory here.'
+  save-notsaved: '%prefix% &cYou don''t have a saved inventory.'
   save-unsaved: '%prefix% &eYour saved inventory has been removed.'
-  no-kitpermission: "%prefix% &cYou don't have permission to use this kit."
+  fix-successfully: '%prefix% &eThere you go!'
+#  fix-spam: '%prefix% &cYou can''t spam this command'
+  killed: '%prefix% &3You have been killed by &e%killer% &3with &e%hearts% hearts.'
+  killer: '%prefix% &3You have killed &e%death% &3with &e%hearts% hearts remaining.'
+  points-killer: '%prefix% &a+%points% points'
+  points-killed: '%prefix% &c-%points% points'
+  killstreak: '%prefix% &e%player% &3is on killstreak.'
+  cannot-leave-spawn: '%prefix% &7You have to select a KIT!'
+  database-nonexistent-player: '%prefix% &cThere is not a player with that name in the database.'
+  spawn-set-successfully: '%prefix% &aYou have set the spawn location successfully.'
+  region-point-set: '%prefix% &aYou have set region point #%point% successfully.'
+  region-points-cleared: '%prefix% &aYou''ve cleared the region points! Spawn protection and other functions no longer apply.'
+  can-no-longer-build: '%prefix% &cYou are now unable to build.'
+  can-now-build: '%prefix% &aYou are now able to build.'
+  kit-added-name: '%prefix% &aYou have added the ''%kitname%'' kit.'
+  setup-kit-yml: '%prefix% &aPlease setup kit settings from kits.yml.'
+  stats-reset-for: '%prefix% &aYou have reset &e%target%''s &astats.'
+  stats-reset-by: '%prefix% &aYour stats have been reset by &e%resetter%.'
+  configs-reloaded: '%prefix% &aConfiguration files have been reloaded!'
+  error-provide-num-1-or-2: '%prefix% &cYou must provide an integer value (1 or 2).'
+  error-provide-1-or-2: '%prefix% &cYou must provide 1 or 2 as the value.'
+  usage-addkit: '%prefix% &3/ffa addkit <name> <permission>'
+  usage-build: '%prefix% &3/ffa build'
+  usage-setregion: '%prefix% &3/ffa setregion <1 - 2>'
+  usage-setspawn: '%prefix% &3/ffa setspawn'
+  usage-reset: '%prefix% &3/ffa reset <player>'
+  top:
+  - '%prefix% &8&m-------------&r &6Top &8&m-------------'
+  - '%playerformat%%prefix% &e#%ranking% &a%name% &3with &c%kills%.'
+  - '%prefix% &8&m-------------&r &6Top &8&m-------------'
   stats:
   - '%prefix% &3Username: &e%name%'
   - '%prefix% &3Kills: &e%kills%'
@@ -29,22 +60,27 @@ Messages:
   - '%prefix% &3Points: &e%points%'
   - '%prefix% &3Ranking: &e#%ranking%'
   - '%prefix% &3KD: &e%kd%'
-  top:
-  - '%prefix% &8&m-------------&r &6Top &8&m-------------'
-  - '%prefix% &e#%ranking% &a%name% &3with &c%kills%.'
-  - '%prefix% &8&m-------------&r &6Top &8&m-------------'
-  fix-successfully: '%prefix% &eThere you go!'
-  fix-spam: "%prefix% &cYou can't spam this command"
-  death: '%prefix% &3You have been killed by &e%killer% &3with &e%hearts%.'
-  killer: '%prefix% &3You have killed &e%death% &3with &e%hearts%.'
-  points-killer: '%prefix% &a+%points% points'
-  points-death: '%prefix% &c-%points% points'
-  killstreak: '%prefix% &e%player% &3is on killstreak.'
-  cannot-leave-spawn: '%prefix% &7You have to select a KIT!'
+  base-command-help:
+  - '&8&m-------------- &r&aFFA Help &8&m--------------'
+  - '&b'
+  - '                 &ePlugin Coded by            '
+  - '                   &aLordOfSupeRz             '
+  - '&b'
+  - '%prefix% &3/ffa setspawn'
+  - '%prefix% &3/ffa setregion <1 - 2>'
+  - '%prefix% &3/ffa resetregion'
+  - '%prefix% &3/ffa reset <player>'
+  - '%prefix% &3/ffa addkit <name> <permission>'
+  - '%prefix% &3/ffa build'
+  - '%prefix% &3/top'
+  - '%prefix% &3/fix'
+  - '%prefix% &3/save'
+  - '%prefix% &3/unsave'
+  - '&8&m---------------------------------------'
 Death:
   items:
-  - 'ARROW,0,1'
-  - 'GOLDEN_APPLE,0,1'
+  - 'ARROW,1,0'
+  - 'GOLDEN_APPLE,1,1'
 Scoreboard:
 - '&6FFA'
 - '&r'

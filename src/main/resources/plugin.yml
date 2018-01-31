@@ -1,8 +1,8 @@
 name: FFA
 main: lord.ffa.plugin.FFA
-version: 1.25
+version: 1.3
 descripton: Some sort of FFA plugin.
-authors: [LordFFA, Drkmaster83]
+authors: [Drkmaster83, LordFFA]
 commands:
   FreeForAll:
     description: Base command for FFA.

@@ -89,7 +89,7 @@ public class InventoryUtils {
 					toItem.addUnsafeEnchantment(ench, level);
 				}
 			}
-			invMap.put(Integer.valueOf(slot), toItem);
+			invMap.put(slot, toItem);
 		}
 		return invMap;
 	}

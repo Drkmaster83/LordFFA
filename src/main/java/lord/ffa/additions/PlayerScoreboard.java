@@ -21,11 +21,11 @@ public class PlayerScoreboard {
 	}
 
 	public void setTitle(String title) {
-		this.title = MessageUtils.getString(title);
+		this.title = MessageUtils.formatString(title);
 	}
 
 	public void addScore(String score, int i) {
-		this.scores.put(MessageUtils.getString(fixScore(score)), i);
+		this.scores.put(MessageUtils.formatString(fixScore(score)), i);
 	}
 
 	private String fixScore(String text) {

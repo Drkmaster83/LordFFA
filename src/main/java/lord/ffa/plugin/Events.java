@@ -3,14 +3,12 @@ package lord.ffa.plugin;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.WeatherType;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -45,16 +43,19 @@ import lord.ffa.stats.Stats;
 public class Events implements Listener
 {
 	private FFA plugin;
+	private static String invName;
 	
 	public Events(FFA plugin) {
 		this.plugin = plugin;
+		refresh();
 	}
 	
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
-		if (plugin.getConfig().getString("Messages.JoinMessage") != null) {
-			e.setJoinMessage(MessageUtils.getString(plugin.getConfig().getString("Messages.JoinMessage").replace("%player%", e.getPlayer().getName())));
+		String join = plugin.getConfig().getString("Messages.join-message");
+		if (join != null && !join.isEmpty()) {
+			e.setJoinMessage(MessageUtils.formatString(join.replace("%player%", e.getPlayer().getName())));
 		} else {
 			e.setJoinMessage(null);
 		}
@@ -83,13 +84,14 @@ public class Events implements Listener
 
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e) {
-		if (plugin.getConfig().getString("Messages.QuitMessage") != null) {
-			e.setQuitMessage(MessageUtils.getString(plugin.getConfig().getString("Messages.QuitMessage").replace("%player%", e.getPlayer().getName())));
+		String quit = plugin.getConfig().getString("Messages.quit-message");
+		if (quit != null && !quit.isEmpty()) {
+			e.setQuitMessage(MessageUtils.formatString(quit.replace("%player%", e.getPlayer().getName())));
 		} else {
 			e.setQuitMessage(null);
 		}
 		plugin.save.remove(e.getPlayer());
-		plugin.fixSpam.remove(e.getPlayer());
+		//plugin.fixSpam.remove(e.getPlayer());
 		plugin.build.remove(e.getPlayer());
 		plugin.target.remove(e.getPlayer());
 	}
@@ -126,7 +128,7 @@ public class Events implements Listener
 	@EventHandler
 	public void onPlayerRespawnEvent(PlayerRespawnEvent e) {
 		Player p = e.getPlayer();
-		plugin.fixSpam.remove(p);
+		//plugin.fixSpam.remove(p);
 		plugin.target.remove(p);
 		if (plugin.getSpawnLocation() != null) {
 			e.setRespawnLocation(plugin.getSpawnLocation());
@@ -156,9 +158,9 @@ public class Events implements Listener
 					ItemMeta item = inv.get(i).getItemMeta();
 					item.spigot().setUnbreakable(true);
 					inv.get(i).setItemMeta(item);
-					p.getInventory().setItem(i.intValue(), inv.get(i));
+					p.getInventory().setItem(i, inv.get(i));
 				} else {
-					p.getInventory().setItem(i.intValue(), inv.get(i));
+					p.getInventory().setItem(i, inv.get(i));
 				}
 			}
 			p.updateInventory();
@@ -190,10 +192,12 @@ public class Events implements Listener
 		ItemStack item = e.getItem();
 		Action action = e.getAction();
 		if(action != Action.RIGHT_CLICK_BLOCK && action != Action.RIGHT_CLICK_AIR) return;
-		if(item == null || item.getType() == Material.AIR || !item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) return; //Fix NPE here
+		if(item == null || item.getType() == Material.AIR || !item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) return;
+		if(plugin.getKitItem() == null || plugin.getKitItem().getType() == Material.AIR || !plugin.getKitItem().hasItemMeta() || !plugin.getKitItem().getItemMeta().hasDisplayName()) return; //Another NPE RIP
 		if(item.getItemMeta().getDisplayName().equals(plugin.getKitItem().getItemMeta().getDisplayName()) && plugin.insideSpawn(e.getPlayer().getLocation())) {
-			Inventory inv = Bukkit.createInventory(null, 9, MessageUtils.cc("&eFFA Kits"));
-			for (String kit : KitManager.getSection("Kits").getKeys(false)) {
+			if(FFA.getKits().getConfigurationSection("Kits") == null) return;
+			Inventory inv = plugin.getServer().createInventory(e.getPlayer(), 9, invName);
+			for (String kit : FFA.getKits().getConfigurationSection("Kits").getKeys(false)) {
 				inv.setItem(KitManager.getKitSlot(kit), KitManager.getKitInvItem(kit));
 			}
 			e.getPlayer().openInventory(inv);
@@ -205,11 +209,11 @@ public class Events implements Listener
 		ItemStack item = e.getCurrentItem();
 		Inventory inv = e.getInventory();
 		Player p = (Player) e.getWhoClicked();
-		if (!inv.getName().equals(MessageUtils.cc("&eFFA Kits"))) return;
+		if (!inv.getName().equals(invName)) return;
 
 		e.setCancelled(true);
 		if (item == null || item.getType() == Material.AIR || !item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) return;
-		for (String kit : KitManager.getSection("Kits").getKeys(false)) {
+		for (String kit : FFA.getKits().getConfigurationSection("Kits").getKeys(false)) {
 			if (KitManager.getKitInvItem(kit).getItemMeta().getDisplayName().equals(item.getItemMeta().getDisplayName())) {
 				if (p.hasPermission(KitManager.getKitPermission(kit))) {
 					p.closeInventory();
@@ -269,27 +273,27 @@ public class Events implements Listener
 		k.setLevel(k.getLevel() + 1);
 		k.setHealth(k.getMaxHealth());
 		String hearts = df.format(k.getHealth() / 2.0D);
-		FileConfiguration conf = plugin.getConfig();
-		died.sendMessage(MessageUtils.getString(conf.getString("Messages.death").replace("%hearts%", hearts).replace("%killer%", k.getName()))); //TODO:Proper message system
-		died.sendMessage(MessageUtils.getString(conf.getString("Messages.points-death").replace("%points%", conf.getInt("Kill-Points")+"")));
-		k.sendMessage(MessageUtils.getString(conf.getString("Messages.killer").replace("%hearts%", hearts).replace("%death%", died.getName())));
-		k.sendMessage(MessageUtils.getString(conf.getString("Messages.points-killer").replace("%points%", conf.getInt("Kill-Points")+"")));
+		MessageUtils.msg(died, MessageUtils.getMessage("Messages.killed").replace("%hearts%", hearts).replace("%killer%", k.getName()));
+		MessageUtils.msg(died, MessageUtils.getMessage("Messages.points-killed").replace("%points%", FFA.getDefConfig().getInt("Kill-Points")+""));
+		MessageUtils.msg(k, MessageUtils.getMessage("Messages.killer").replace("%hearts%", hearts).replace("%killed%", died.getName()));
+		MessageUtils.msg(k, MessageUtils.getMessage("Messages.points-killer").replace("%points%", FFA.getDefConfig().getInt("Kill-Points")+""));
 		
 		new BukkitRunnable() {
 			@Override
 			public void run() {
 				Stats.addKills(kill.getUniqueId().toString(), 1);
 				Stats.addDeaths(died.getUniqueId().toString(), 1);
-				Stats.addPoints(kill.getUniqueId().toString(), conf.getInt("Kill-Points"));
+				Stats.addPoints(kill.getUniqueId().toString(), FFA.getDefConfig().getInt("Kill-Points"));
 				if (Stats.getPoints(died.getUniqueId().toString()) != 0 && Stats.getPoints(died.getUniqueId().toString()) - 5 <= 0) {
-					Stats.addPoints(died.getUniqueId().toString(), conf.getInt("Kill-Points"));
+					Stats.addPoints(died.getUniqueId().toString(), FFA.getDefConfig().getInt("Kill-Points"));
 				}
 			}
 		}.runTaskAsynchronously(plugin);
 
 		if (k.getLevel() == 5) {
 			k.setLevel(0);
-			died.getServer().broadcastMessage(MessageUtils.getString(conf.getString("Messages.killstreak").replace("%player%", k.getName())));
+			String broadcast = MessageUtils.getMessage("Messages.killstreak").replace("%player%", k.getName());
+			if(broadcast != null && !broadcast.isEmpty()) died.getServer().broadcastMessage(broadcast);
 			k.playSound(k.getLocation(), Sound.LEVEL_UP, 10.0F, 20.0F);
 		}
 		for (ItemStack item : plugin.deathItems()) {
@@ -355,5 +359,16 @@ public class Events implements Listener
 	@EventHandler
 	public void onFoodChange(FoodLevelChangeEvent e) {
 		e.setCancelled(true);
+	}
+	
+	public static void refresh() {
+		for(Player p : FFA.getInstance().getServer().getOnlinePlayers()) {
+			if(p.getOpenInventory() == null) continue;
+			if(p.getOpenInventory().getTitle().equals(invName)) {
+				p.closeInventory();
+				MessageUtils.sendMessage(p, "closed-inv-plugin-reload");
+			}
+		}
+		invName = MessageUtils.cc(FFA.getDefConfig().getString("Kit.invName", "&eFFA Kits"));
 	}
 }
